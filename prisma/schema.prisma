@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id               Int        @id @default(autoincrement())
+  chat_id          String?    @unique
+  name             String?
+  last_message     String?
+  is_block         Boolean    @default(false)
+  phone_number     String?
+  photo            String?
+  lang             String?
+  is_online        Boolean?
+  socket_id        String?
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
+  switch_ticket_id Int?
+  action           Json?
+  messages         Messages[]
+  tickets          Tickets[]
+
+  @@map("users")
+}
+
+model Categories {
+  id      Int         @id @default(autoincrement())
+  name    Json?
+  color   String?
+  status  StatusType?
+  tickets Tickets[]
+
+  @@map("categories")
+}
+
+model Tickets {
+  id                Int            @id @default(autoincrement())
+  user_id           Int
+  category_id       Int
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+  status            String
+  request_close     Boolean        @default(false)
+  operator_id       Int?
+  rate              Int?
+  last_request_user String?
+  last_message_id   Int?
+  deleted           Boolean        @default(false)
+  messages          Messages[]
+  config            Ticket_config?
+  lang              String?        @db.VarChar(2)
+  categories        Categories     @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  operator          Operators?     @relation(fields: [operator_id], references: [id], onDelete: Cascade)
+  user              Users          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
+}
+
+model Operators {
+  id         Int               @id @default(autoincrement())
+  first_name String?
+  last_name  String?
+  login      String
+  password   String
+  user_id    Int?
+  socket_id  String?
+  lang       String?           @default("uz")
+  image      String?
+  created_at DateTime          @default(now()) @db.Timestamp(5)
+  ticket_id  Int?
+  is_active  Boolean           @default(false)
+  messages   Messages[]
+  tickets    Tickets[]
+  config     Operators_config?
+
+  @@map("operators")
+}
+
+model Operators_config {
+  id             Int        @id @default(autoincrement())
+  selected_users Json[]
+  operator_id    Int        @unique
+  operator       Operators? @relation(fields: [operator_id], references: [id], onDelete: Cascade)
+  filters        Json
+
+  @@map("operators_config")
+}
+
+model Ticket_config {
+  id        Int     @id @default(autoincrement())
+  filters   Json
+  ticket_id Int     @unique
+  ticket    Tickets @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+
+  @@map("ticket_config")
+}
+
+model Messages {
+  id           Int        @id @default(autoincrement())
+  user_id      Int
+  operator_id  Int?
+  created_at   DateTime   @default(now()) @db.Timestamp(5)
+  is_answer    Int
+  content_type String
+  bot_id       BigInt?
+  is_ready     Boolean    @default(false)
+  ticket_id    Int
+  message      Json?
+  deleted      Boolean    @default(false)
+  operator     Operators? @relation(fields: [operator_id], references: [id], onDelete: Cascade)
+  tickets      Tickets    @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  user         Users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+enum StatusType {
+  ACTIVE
+  NON_ACTIVE
+}

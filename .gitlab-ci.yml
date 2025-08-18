@@ -1,0 +1,35 @@
+stages:
+  - "build"
+  - "deploy"
+
+variables:
+  IMAGE_TAG: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
+  namespace: default
+
+build:
+  stage: build
+  tags:
+    - dpay
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${IMAGE_TAG}"
+
+deploy:
+  stage: deploy
+  tags:
+    - dpay
+  image: bitnami/kubectl:latest
+  script:
+    - echo "$KUBECONFIG_CONTENT" > /tmp/admin.conf
+    - export KUBECONFIG=/tmp/admin.conf
+    - export IMAGE_TAG=${IMAGE_TAG}
+    - envsubst < deployment.yaml | kubectl apply -f -
+    - kubectl apply -f service.yaml
+
+  only:
+    - main
