@@ -28,9 +28,7 @@ export class AuthService {
     if (md5 != user.password) {
       throw new BadRequestException('Invalid login or Password');
     }
-    await this.socket.server
-      .to(user.socket_id)
-      .emit('unautharization', { status: '401', message: 'Unautharization' });
+    await this.socket.server.to(user.socket_id).emit('unautharization', { status: '401', message: 'Unautharization' });
     return await this.jwtSign({ user_id: user.id, name: user.first_name });
   }
 
@@ -40,10 +38,7 @@ export class AuthService {
       where: { AND: { login: login } },
     });
     if (user) throw new BadRequestException(register_error[lang]);
-    const isSignPassword = crypto
-      .createHash('md5')
-      .update(password)
-      .digest('hex');
+    const isSignPassword = crypto.createHash('md5').update(password).digest('hex');
     user = await this.prisma.operators.create({
       data: { login: login, password: isSignPassword, lang: 'uz' },
     });

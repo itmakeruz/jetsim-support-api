@@ -37,12 +37,7 @@ import {
   OpenTicketResponse,
   closeTicketResponse,
 } from './responses/AppServiceResponse';
-import {
-  FileUploadDto,
-  SendFileDto,
-  closeTicketDto,
-  openTicketDto,
-} from './dto/openTicketDto';
+import { FileUploadDto, SendFileDto, closeTicketDto, openTicketDto } from './dto/openTicketDto';
 import { ClientRequest } from './dto/clientModel';
 import { MyTicketModel } from './responses/TicketsModel';
 import { TicketIdDto } from './operator/dto';
@@ -68,10 +63,7 @@ export class renderController {
   @ApiOkResponse({ type: GetTicektsResponse, isArray: true })
   async getTickets(@Req() req: Request) {
     let user: ClientRequest = req['user'];
-    let lang =
-      req['headers']?.['lang']?.toString() ||
-      req['headers']?.['accept-language']?.toString() ||
-      'ru';
+    let lang = req['headers']?.['lang']?.toString() || req['headers']?.['accept-language']?.toString() || 'ru';
     return await this.service.getTicketsList(user, lang);
   }
 
@@ -80,10 +72,7 @@ export class renderController {
   @ApiOkResponse({ type: MyticketResponse })
   async getMyTickets(@Req() req: Request) {
     let user: ClientRequest = req['user'];
-    let lang =
-      req['headers']?.['lang']?.toString() ||
-      req['headers']?.['accept-language']?.toString() ||
-      'ru';
+    let lang = req['headers']?.['lang']?.toString() || req['headers']?.['accept-language']?.toString() || 'ru';
     return await this.service.getMyTickets(user, lang);
   }
 
@@ -92,10 +81,7 @@ export class renderController {
   @ApiOkResponse({ type: closeTicketResponse })
   async closeTicket(@Body() body: closeTicketDto, @Req() req: Request) {
     let user: ClientRequest = req['user'];
-    let lang =
-      req['headers']?.['lang']?.toString() ||
-      req['headers']?.['accept-language']?.toString() ||
-      'ru';
+    let lang = req['headers']?.['lang']?.toString() || req['headers']?.['accept-language']?.toString() || 'ru';
     return await this.service.closeTicket(body, user, lang);
   }
 
@@ -104,10 +90,7 @@ export class renderController {
   @ApiOkResponse({ type: SendMessageResponse, isArray: true })
   async getTicketChatsById(@Param() param: TicketIdDto, @Req() req: Request) {
     let user: ClientRequest = req['user'];
-    let lang =
-      req['headers']?.['lang']?.toString() ||
-      req['headers']?.['accept-language']?.toString() ||
-      'ru';
+    let lang = req['headers']?.['lang']?.toString() || req['headers']?.['accept-language']?.toString() || 'ru';
     return await this.service.getChatsByTicketId(param, user, lang);
   }
 
@@ -116,10 +99,7 @@ export class renderController {
   @ApiOkResponse({ type: OpenTicketResponse })
   async openTicket(@Body() body: openTicketDto, @Req() req: Request) {
     let user = req['user'];
-    let lang =
-      req['headers']?.['lang']?.toString() ||
-      req['headers']?.['accept-language']?.toString() ||
-      'ru';
+    let lang = req['headers']?.['lang']?.toString() || req['headers']?.['accept-language']?.toString() || 'ru';
     return await this.service.openTicket(body, user, lang);
   }
 
@@ -135,9 +115,7 @@ export class renderController {
     @Req() req: Request,
   ): Promise<any> {
     let user = req['user'];
-    let lang =
-      req['headers']?.['lang']?.toString() ||
-      req['headers']?.['accept-language']?.toString();
+    let lang = req['headers']?.['lang']?.toString() || req['headers']?.['accept-language']?.toString();
     if (file?.size > 100000000) {
       throw new BadRequestException(file_size_error[lang]);
     }

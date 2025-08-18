@@ -85,26 +85,17 @@ export class AppModule {
       let now = new Date().getTime();
       let ticket_updatedAt = new Date(el.updated_at).getTime();
 
-      if (
-        el.status == StatusTypes.ANSWERED &&
-        now - ticket_updatedAt > 259200000
-      ) {
+      if (el.status == StatusTypes.ANSWERED && now - ticket_updatedAt > 259200000) {
         await this.prisma.tickets.update({
           where: { id: el.id },
           data: { status: StatusTypes.NOACTIVE },
         });
-      } else if (
-        el.status == StatusTypes.AWAITING &&
-        now - ticket_updatedAt > 10800000
-      ) {
+      } else if (el.status == StatusTypes.AWAITING && now - ticket_updatedAt > 10800000) {
         await this.prisma.tickets.update({
           where: { id: el.id },
           data: { status: StatusTypes.EXPIRED },
         });
-      } else if (
-        el.status == StatusTypes.NOACTIVE &&
-        now - ticket_updatedAt > 259200000
-      ) {
+      } else if (el.status == StatusTypes.NOACTIVE && now - ticket_updatedAt > 259200000) {
         await this.prisma.tickets.update({
           where: { id: el.id },
           data: { status: StatusTypes.CLOSED },

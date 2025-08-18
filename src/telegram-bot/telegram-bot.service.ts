@@ -99,17 +99,16 @@ export class TelegramBotService {
       if (action?.step == 'answer') {
         if (!action.category_id.toString().startsWith('_')) {
           try {
-            let ticket: OpenTicketResponse | any =
-              await this.clientService.openTicket(
-                {
-                  category_id: Number(action.category_id),
-                  message: text,
-                  bot_message_id: msg.message_id,
-                  content_type: ContentType.PHOTO,
-                },
-                { phone: user.phone_number, uuid: user.chat_id },
-                user?.lang || 'ru',
-              );
+            let ticket: OpenTicketResponse | any = await this.clientService.openTicket(
+              {
+                category_id: Number(action.category_id),
+                message: text,
+                bot_message_id: msg.message_id,
+                content_type: ContentType.PHOTO,
+              },
+              { phone: user.phone_number, uuid: user.chat_id },
+              user?.lang || 'ru',
+            );
 
             action.ticket_id = Number(ticket.data.id);
             action.step = 'operator';
@@ -136,11 +135,7 @@ export class TelegramBotService {
             content_type: ContentType.PHOTO,
           };
           if (reply_message_id) payload.reply_message_id = reply_message_id;
-          await this.message.createMessage(
-            payload,
-            chat_id.toString(),
-            msg.message_id,
-          );
+          await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
           return bot.sendMessage(chat_id, success_txt[user?.lang || 'ru']);
         }
       } else if (action?.step == 'operator') {
@@ -150,11 +145,7 @@ export class TelegramBotService {
           content_type: ContentType.PHOTO,
         };
         if (reply_message_id) payload.reply_message_id = reply_message_id;
-        await this.message.createMessage(
-          payload,
-          chat_id.toString(),
-          msg.message_id,
-        );
+        await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
       }
     });
 
@@ -165,8 +156,7 @@ export class TelegramBotService {
       let user = await this.prisma.users.findUnique({
         where: { chat_id: chat_id.toString() },
       });
-      if (msg.video.file_size / 1024 / 1024 > 20)
-        return bot.sendMessage(chat_id, max_file_size_error[user.lang]);
+      if (msg.video.file_size / 1024 / 1024 > 20) return bot.sendMessage(chat_id, max_file_size_error[user.lang]);
 
       let file_link = await bot.getFileLink(file_id);
       let date = new Date();
@@ -192,17 +182,16 @@ export class TelegramBotService {
       if (action?.step == 'answer') {
         if (!action.category_id.toString().startsWith('_')) {
           try {
-            let ticket: OpenTicketResponse | any =
-              await this.clientService.openTicket(
-                {
-                  category_id: Number(action.category_id),
-                  message: text,
-                  bot_message_id: msg.message_id,
-                  content_type: ContentType.VIDEO,
-                },
-                { phone: user.phone_number, uuid: user.chat_id },
-                user?.lang || 'ru',
-              );
+            let ticket: OpenTicketResponse | any = await this.clientService.openTicket(
+              {
+                category_id: Number(action.category_id),
+                message: text,
+                bot_message_id: msg.message_id,
+                content_type: ContentType.VIDEO,
+              },
+              { phone: user.phone_number, uuid: user.chat_id },
+              user?.lang || 'ru',
+            );
 
             action.ticket_id = Number(ticket.data.id);
             action.step = 'operator';
@@ -229,11 +218,7 @@ export class TelegramBotService {
             content_type: ContentType.VIDEO,
           };
           if (reply_message_id) payload.reply_message_id = reply_message_id;
-          await this.message.createMessage(
-            payload,
-            chat_id.toString(),
-            msg.message_id,
-          );
+          await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
           return bot.sendMessage(chat_id, success_txt[user?.lang || 'ru']);
         }
       } else if (action?.step == 'operator') {
@@ -243,11 +228,7 @@ export class TelegramBotService {
           content_type: ContentType.VIDEO,
         };
         if (reply_message_id) payload.reply_message_id = reply_message_id;
-        await this.message.createMessage(
-          payload,
-          chat_id.toString(),
-          msg.message_id,
-        );
+        await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
       }
     });
 
@@ -260,8 +241,7 @@ export class TelegramBotService {
       let user = await this.prisma.users.findUnique({
         where: { chat_id: chat_id.toString() },
       });
-      if (msg.video_note.file_size / 1024 / 1024 > 20)
-        return bot.sendMessage(chat_id, max_file_size_error[user.lang]);
+      if (msg.video_note.file_size / 1024 / 1024 > 20) return bot.sendMessage(chat_id, max_file_size_error[user.lang]);
 
       let file_link = await bot.getFileLink(file_id);
       let date = new Date();
@@ -287,17 +267,16 @@ export class TelegramBotService {
       if (action?.step == 'answer') {
         if (!action.category_id.toString().startsWith('_')) {
           try {
-            let ticket: OpenTicketResponse | any =
-              await this.clientService.openTicket(
-                {
-                  category_id: Number(action.category_id),
-                  message: text,
-                  bot_message_id: msg.message_id,
-                  content_type: ContentType.VIDEO,
-                },
-                { phone: user.phone_number, uuid: user.chat_id },
-                user?.lang || 'ru',
-              );
+            let ticket: OpenTicketResponse | any = await this.clientService.openTicket(
+              {
+                category_id: Number(action.category_id),
+                message: text,
+                bot_message_id: msg.message_id,
+                content_type: ContentType.VIDEO,
+              },
+              { phone: user.phone_number, uuid: user.chat_id },
+              user?.lang || 'ru',
+            );
 
             action.ticket_id = Number(ticket.data.id);
             action.step = 'operator';
@@ -324,11 +303,7 @@ export class TelegramBotService {
             content_type: ContentType.VIDEO,
           };
           if (reply_message_id) payload.reply_message_id = reply_message_id;
-          await this.message.createMessage(
-            payload,
-            chat_id.toString(),
-            msg.message_id,
-          );
+          await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
           return bot.sendMessage(chat_id, success_txt[user?.lang || 'ru']);
         }
       } else if (action?.step == 'operator') {
@@ -338,11 +313,7 @@ export class TelegramBotService {
           content_type: ContentType.VIDEO,
         };
         if (reply_message_id) payload.reply_message_id = reply_message_id;
-        await this.message.createMessage(
-          payload,
-          chat_id.toString(),
-          msg.message_id,
-        );
+        await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
       }
     });
 
@@ -357,10 +328,7 @@ export class TelegramBotService {
       });
 
       if (msg.voice.file_size / 1024 / 1024 > 20)
-        return bot.sendMessage(
-          chat_id,
-          max_file_size_error[user?.lang || 'ru'],
-        );
+        return bot.sendMessage(chat_id, max_file_size_error[user?.lang || 'ru']);
 
       let file_link = await bot.getFileLink(file_id);
       let date = new Date();
@@ -386,17 +354,16 @@ export class TelegramBotService {
       if (action?.step == 'answer') {
         if (!action.category_id.toString().startsWith('_')) {
           try {
-            let ticket: OpenTicketResponse | any =
-              await this.clientService.openTicket(
-                {
-                  category_id: Number(action.category_id),
-                  message: text,
-                  bot_message_id: msg.message_id,
-                  content_type: ContentType.VOICE, // ✅ voice
-                },
-                { phone: user.phone_number, uuid: user.chat_id },
-                user?.lang || 'ru',
-              );
+            let ticket: OpenTicketResponse | any = await this.clientService.openTicket(
+              {
+                category_id: Number(action.category_id),
+                message: text,
+                bot_message_id: msg.message_id,
+                content_type: ContentType.VOICE, // ✅ voice
+              },
+              { phone: user.phone_number, uuid: user.chat_id },
+              user?.lang || 'ru',
+            );
 
             action.ticket_id = Number(ticket.data.id);
             action.step = 'operator';
@@ -423,11 +390,7 @@ export class TelegramBotService {
             content_type: ContentType.VOICE, // ✅ voice
           };
           if (reply_message_id) payload.reply_message_id = reply_message_id;
-          await this.message.createMessage(
-            payload,
-            chat_id.toString(),
-            msg.message_id,
-          );
+          await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
           return bot.sendMessage(chat_id, success_txt[user?.lang || 'ru']);
         }
       } else if (action?.step == 'operator') {
@@ -437,11 +400,7 @@ export class TelegramBotService {
           content_type: ContentType.VOICE, // ✅ voice
         };
         if (reply_message_id) payload.reply_message_id = reply_message_id;
-        await this.message.createMessage(
-          payload,
-          chat_id.toString(),
-          msg.message_id,
-        );
+        await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
       }
     });
   }

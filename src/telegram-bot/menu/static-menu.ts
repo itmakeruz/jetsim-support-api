@@ -9,21 +9,11 @@ const button = (btn: ButtonType, lang?) => {
       } = {
         en: {
           resize_keyboard: true,
-          keyboard: [
-            [
-              { text: '📲 Download application' },
-              { text: '📞 Contact', request_contact: true },
-            ],
-          ],
+          keyboard: [[{ text: '📲 Download application' }, { text: '📞 Contact', request_contact: true }]],
         },
         ru: {
           resize_keyboard: true,
-          keyboard: [
-            [
-              { text: '📲 Скачать приложение' },
-              { text: '📞 Контакты', request_contact: true },
-            ],
-          ],
+          keyboard: [[{ text: '📲 Скачать приложение' }, { text: '📞 Контакты', request_contact: true }]],
         },
       };
       return home[lang];
@@ -34,15 +24,11 @@ const button = (btn: ButtonType, lang?) => {
       } = {
         en: {
           resize_keyboard: true,
-          keyboard: [
-            [{ text: '📲 Download application' }, { text: '📞 Contact' }],
-          ],
+          keyboard: [[{ text: '📲 Download application' }, { text: '📞 Contact' }]],
         },
         ru: {
           resize_keyboard: true,
-          keyboard: [
-            [{ text: '📲 Скачать приложение' }, { text: '📞 Контакты' }],
-          ],
+          keyboard: [[{ text: '📲 Скачать приложение' }, { text: '📞 Контакты' }]],
         },
       };
       return home2[lang];

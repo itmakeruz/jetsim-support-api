@@ -32,10 +32,7 @@ function fillOperatorData(tickets: Tickets[]) {
     }
   });
 
-  result['overall'] = Object.keys(result).reduce(
-    (acc, curr) => result[curr] + acc,
-    0,
-  );
+  result['overall'] = Object.keys(result).reduce((acc, curr) => result[curr] + acc, 0);
 
   return result;
 }

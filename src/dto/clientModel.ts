@@ -1,6 +1,6 @@
-import { Request } from "express";
+import { Request } from 'express';
 
 export interface ClientRequest extends Express.User {
-    uuid?: string,
-    phone?: string
+  uuid?: string;
+  phone?: string;
 }

@@ -1,30 +1,9 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { OperatorService } from './operator.service';
-import {
-  TicketIdDto,
-  UserCardsDto,
-  UserCardsTranDto,
-  UserParamDto,
-  UserQueryDto,
-  WordsHintsDto,
-} from './dto';
+import { TicketIdDto, UserCardsDto, UserCardsTranDto, UserParamDto, UserQueryDto, WordsHintsDto } from './dto';
 import { Request } from 'express';
 import { AtGuard } from 'src/auth/auth.guard';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import {
   ChatModel,
   CloseTicketResponse,
@@ -33,10 +12,7 @@ import {
   TicketModel,
   UsersResponse,
 } from './responses';
-import {
-  BadRequestExceptionResponse,
-  GetTicektsResponse,
-} from 'src/responses/AppServiceResponse';
+import { BadRequestExceptionResponse, GetTicektsResponse } from 'src/responses/AppServiceResponse';
 import { OperatorRequest } from 'src/dto/operatorModel';
 import { UserCardsResponse } from './responses/userCardsModel';
 import { TransactionsResponse } from './responses/cardTransactions';

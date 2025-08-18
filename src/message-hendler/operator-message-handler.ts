@@ -8,13 +8,7 @@ import { SendMessageResponse } from './emitsmodel/sendmessage-response';
 import { WsException } from '@nestjs/websockets';
 import { OperatorRequest } from 'src/dto/operatorModel';
 import { TicketModel, UserModel } from 'src/operator/responses';
-import {
-  message_notfound,
-  ticket_notfound,
-  ticket_opened_error,
-  unable_user_error,
-  user_blocked,
-} from 'src/dictonary';
+import { message_notfound, ticket_notfound, ticket_opened_error, unable_user_error, user_blocked } from 'src/dictonary';
 import { async } from 'rxjs';
 import { TelegramBotService } from 'src/telegram-bot/telegram-bot.service';
 import { botSendMesssage } from 'src/telegram-bot/hendlers/botsender';
@@ -89,27 +83,20 @@ export class OperatorMessageHendler {
           message: message_notfound[lang],
         });
       newMessage.reply_message_id = message.id;
-      Object(ticket.user.action)?.is_telegram_user
-        ? (sendmessage.reply_bot_message_id = Number(message.bot_id))
-        : null;
+      Object(ticket.user.action)?.is_telegram_user ? (sendmessage.reply_bot_message_id = Number(message.bot_id)) : null;
       sendmessage.reply_message_id = data.reply_message_id;
       sendmessage.reply_content = {
         content: Object(message.message)?.content,
         content_type: message.content_type,
-        author:
-          message.is_answer == 0
-            ? message.user.name
-            : message.operator.first_name,
+        author: message.is_answer == 0 ? message.user.name : message.operator.first_name,
       };
     }
 
-    let contentType = data.reply_message_id
-      ? ContentType.REPLYTEXT
-      : ContentType.TEXT;
+    let contentType = data.reply_message_id ? ContentType.REPLYTEXT : ContentType.TEXT;
 
     let createdMessage = await this.prisma.messages.create({
       data: {
-        user_id: operator.user_id,
+        user_id: ticket.user.id,
         is_answer: 1,
         operator_id: user.user_id,
         content_type: contentType,
@@ -146,10 +133,7 @@ export class OperatorMessageHendler {
       data: { last_message: data.message, updated_at: new Date() },
     });
 
-    let clientSocketId =
-      createdMessage.user.switch_ticket_id === data.ticket_id
-        ? createdMessage.user.socket_id
-        : '';
+    let clientSocketId = createdMessage.user.switch_ticket_id === data.ticket_id ? createdMessage.user.socket_id : '';
     let responseData: SendMessageResponse = {
       id: createdMessage.id,
       message: sendmessage,
@@ -211,8 +195,6 @@ export class OperatorMessageHendler {
     });
     this.ticketHelper.notification(server, ticket.id);
     server.to(client.id).emit(EmitTypes.NEWMESSAGE, responseData);
-    server
-      .to(clientSocketId?.toString())
-      .emit(EmitTypes.NEWMESSAGE, responseData);
+    server.to(clientSocketId?.toString()).emit(EmitTypes.NEWMESSAGE, responseData);
   }
 }

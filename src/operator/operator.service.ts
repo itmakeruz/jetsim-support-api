@@ -23,12 +23,7 @@ import {
 import { OperatorRequest } from 'src/dto/operatorModel';
 import { SendMessageResponse } from 'src/message-hendler/emitsmodel/sendmessage-response';
 import { Message } from 'src/dto/openTicketDto';
-import {
-  ContentType,
-  EmitTypes,
-  StatusTypes,
-  status_types,
-} from 'src/dto/types';
+import { ContentType, EmitTypes, StatusTypes, status_types } from 'src/dto/types';
 import { GetTicektsResponse } from 'src/responses/AppServiceResponse';
 import {
   conternt_types,
@@ -48,10 +43,7 @@ import { PrismaNestService } from 'src/prisma/nestjs.prisma.service';
 import { bankNames } from 'src/dto/bank-names';
 import { cardsTypes } from 'src/dto/cards-types';
 import { UserCardsResponse } from './responses/userCardsModel';
-import {
-  Transactions,
-  TransactionsResponse,
-} from './responses/cardTransactions';
+import { Transactions, TransactionsResponse } from './responses/cardTransactions';
 import { SocketGateway } from 'src/app.gateway';
 import { Helper } from 'src/helper/helper';
 import { MyHttpService } from 'src/http/http.service';
@@ -66,11 +58,7 @@ export class OperatorService {
     private config: ConfigService,
   ) {}
 
-  async getUsers(
-    data: UserQueryDto,
-    user: OperatorRequest,
-    lang,
-  ): Promise<UsersResponse> {
+  async getUsers(data: UserQueryDto, user: OperatorRequest, lang): Promise<UsersResponse> {
     const { page, size, search } = data;
     let usersCount = await this.prisma.users.count();
 
@@ -99,8 +87,7 @@ export class OperatorService {
       where: { operator_id: user.user_id },
     });
 
-    let userIds =
-      operator_config?.selected_users?.map((el) => Number(el)) ?? [];
+    let userIds = operator_config?.selected_users?.map((el) => Number(el)) ?? [];
     let selectedUsers = await this.prisma.users.findMany({
       where: { id: { in: userIds } },
       select: {
@@ -148,9 +135,7 @@ export class OperatorService {
           user.messages[0].content_type != ContentType.TEXT
             ? { content: user.messages[0].content_type }
             : user.messages[0]?.message || { content: '' },
-        push: user.messages.filter(
-          (msg) => msg.is_answer === 0 && msg.is_ready === false,
-        ).length,
+        push: user.messages.filter((msg) => msg.is_answer === 0 && msg.is_ready === false).length,
       });
     });
     let totalPage = Math.ceil(usersCount / Number(size));
@@ -160,18 +145,12 @@ export class OperatorService {
       nextPage: +page != totalPage ? +page + 1 : null,
       prevPage: +page > 1 ? +page - 1 : null,
       selected_users: formattedSelectedUser,
-      users: usersData.filter(
-        (e) => !formattedSelectedUser.map((us) => us.id)?.includes(e.id),
-      ),
+      users: usersData.filter((e) => !formattedSelectedUser.map((us) => us.id)?.includes(e.id)),
     };
     return response;
   }
 
-  async getUserByIdTickets(
-    query: UserParamDto,
-    user: OperatorRequest,
-    lang,
-  ): Promise<TicketResponseModel> {
+  async getUserByIdTickets(query: UserParamDto, user: OperatorRequest, lang): Promise<TicketResponseModel> {
     let queryTickets = [];
     let page = Number(query.page) || 1;
     let size = Number(query.size) || 1000;
@@ -209,10 +188,7 @@ export class OperatorService {
           ?.split(',')
           ?.map((el) => (!isNaN(Number(el)) ? parseInt(el) : undefined))
           ?.filter((el) => el != undefined) || [];
-      let statuses =
-        query?.statuses
-          ?.split(',')
-          ?.filter((el) => status_types.includes(el)) || [];
+      let statuses = query?.statuses?.split(',')?.filter((el) => status_types.includes(el)) || [];
       let day = query.day;
 
       let filter: FilterType = { deleted: false };
@@ -226,9 +202,7 @@ export class OperatorService {
       if (c_ids?.length) filter.category_id = { in: c_ids };
 
       if (day) {
-        let from_date = new Date(
-          new Date().getTime() - Number(day) * 24 * 60 * 60 * 1000,
-        );
+        let from_date = new Date(new Date().getTime() - Number(day) * 24 * 60 * 60 * 1000);
         let to_date = new Date();
         filter.updated_at = { lte: to_date, gte: from_date };
       }
@@ -307,13 +281,8 @@ export class OperatorService {
                 message_id: ticket.messages[0]?.id,
               },
         user_id: ticket.user.id,
-        last_request_user:
-          ticket.messages[0]?.is_answer === 0
-            ? ticket.user.name
-            : ticket?.operator?.firs_name || '',
-        push: ticket.messages.filter(
-          (message) => message.is_ready === false && message.is_answer === 0,
-        ).length,
+        last_request_user: ticket.messages[0]?.is_answer === 0 ? ticket.user.name : ticket?.operator?.firs_name || '',
+        push: ticket.messages.filter((message) => message.is_ready === false && message.is_answer === 0).length,
         formatted_date: Helper.formatByMonthName(ticket.updated_at, lang),
         status: ticket.status,
         request_close: ticket.request_close,
@@ -391,16 +360,11 @@ export class OperatorService {
     messages.forEach((message) => {
       let sendmessage: Message = { content: Object(message.message).content };
       if (message.content_type == ContentType.REPLYTEXT) {
-        let replyMessage = messages.find(
-          (mes) => mes.id == Object(message?.message)?.reply_message_id,
-        );
+        let replyMessage = messages.find((mes) => mes.id == Object(message?.message)?.reply_message_id);
         sendmessage.reply_content = {
           content: Object(replyMessage?.message)?.content,
           content_type: replyMessage?.content_type,
-          author:
-            replyMessage?.is_answer == 0
-              ? message.user.name
-              : message?.operator?.first_name,
+          author: replyMessage?.is_answer == 0 ? message.user.name : message?.operator?.first_name,
         };
         sendmessage.reply_message_id = replyMessage?.id;
       }
@@ -411,10 +375,7 @@ export class OperatorService {
         formatted_time: message.created_at.toLocaleTimeString('ru'),
         date: message.created_at,
         base_url: this.config.get('FILES_BASE_URL'),
-        author:
-          message.is_answer == 0
-            ? message.user.name
-            : message?.operator?.first_name,
+        author: message.is_answer == 0 ? message.user.name : message?.operator?.first_name,
         content_type: message.content_type,
         is_ready: message.is_ready,
         message: sendmessage,
@@ -424,9 +385,7 @@ export class OperatorService {
     let pushCount = await this.prisma.messages.count({
       where: { user_id: oneData.user.id, is_answer: 0, is_ready: false },
     });
-    let last_message: LastMessage = !['text', 'reply_text'].includes(
-      oneData.tickets.messages[0].content_type,
-    )
+    let last_message: LastMessage = !['text', 'reply_text'].includes(oneData.tickets.messages[0].content_type)
       ? conternt_types[oneData.tickets.messages[0].content_type][lang]
       : {
           content: Object(oneData.tickets.messages[0].message).content || '',
@@ -450,13 +409,8 @@ export class OperatorService {
         user_name: oneData.user.name,
         color: oneData.tickets.categories.color,
         last_message: last_message,
-        push: oneData.tickets.messages.filter(
-          (message) => message.is_ready === false && message.is_answer == 0,
-        ).length,
-        formatted_date: Helper.formatByMonthName(
-          oneData.tickets.updated_at,
-          lang,
-        ),
+        push: oneData.tickets.messages.filter((message) => message.is_ready === false && message.is_answer == 0).length,
+        formatted_date: Helper.formatByMonthName(oneData.tickets.updated_at, lang),
         last_request_user: '',
         status: oneData.tickets.status,
         request_close: oneData.tickets.request_close,
@@ -482,12 +436,8 @@ export class OperatorService {
       push: pushCount,
     };
 
-    this.socket.server
-      .to(operator.socket_id)
-      .emit(EmitTypes.UPDATEDUSER, userData);
-    this.socket.server
-      .to(operator.socket_id)
-      .emit(EmitTypes.UPDATETICKET, responseData.ticket);
+    this.socket.server.to(operator.socket_id).emit(EmitTypes.UPDATEDUSER, userData);
+    this.socket.server.to(operator.socket_id).emit(EmitTypes.UPDATETICKET, responseData.ticket);
     return responseData;
   }
 
@@ -547,8 +497,7 @@ export class OperatorService {
       dates: [],
     };
     for (const category of Object.keys(result.categories)) {
-      let category_name = categories.find((el) => el.id === Number(category))
-        .name[lang];
+      let category_name = categories.find((el) => el.id === Number(category)).name[lang];
       responseData.categories.push({
         id: Number(category),
         name: `${category_name} (${result.categories[category]})`,
@@ -626,11 +575,7 @@ export class OperatorService {
     ]);
   }
 
-  async closeTicket(
-    param: TicketIdDto,
-    user: OperatorRequest,
-    lang = 'ru',
-  ): Promise<CloseTicketResponse> {
+  async closeTicket(param: TicketIdDto, user: OperatorRequest, lang = 'ru'): Promise<CloseTicketResponse> {
     await this.prisma.tickets.update({
       where: { id: Number(param.id) },
       data: { request_close: true },
@@ -754,14 +699,8 @@ export class OperatorService {
         summa: (transaction.amount / 100).toLocaleString('uz-UZ', {
           minimumFractionDigits: 2,
         }),
-        status:
-          transaction.status == 'PR'
-            ? statuses[StatusTypes.SUCCESS]
-            : statuses.error,
-        status_color:
-          transaction.status == 'PR'
-            ? statusColors[StatusTypes.SUCCESS]
-            : statusColors['error'],
+        status: transaction.status == 'PR' ? statuses[StatusTypes.SUCCESS] : statuses.error,
+        status_color: transaction.status == 'PR' ? statusColors[StatusTypes.SUCCESS] : statusColors['error'],
         formatted_date: '',
         icon: transaction.icon,
       });
@@ -782,9 +721,7 @@ export class OperatorService {
   async getHints(query: WordsHintsDto, user: OperatorRequest, lang = 'ru') {
     const { search } = query;
 
-    const hints: Array<{ message: string }> = await this.prisma.$queryRawUnsafe<
-      Array<{ message: string }>
-    >(`
+    const hints: Array<{ message: string }> = await this.prisma.$queryRawUnsafe<Array<{ message: string }>>(`
             select 
                 distinct message ->> 'content' as message 
             from messages 
@@ -798,17 +735,13 @@ export class OperatorService {
   private getCardBankName(card: string, lang: string): string {
     let cardType = this.getCardVendor(card);
     let bankName = bankNames[cardType].filter(
-      (c) =>
-        c.prefix.substring(0, c.prefix.length) ===
-        card.substring(0, c.prefix.length),
+      (c) => c.prefix.substring(0, c.prefix.length) === card.substring(0, c.prefix.length),
     );
     return bankName[0] ? bankName[0]?.lang[lang] : '';
   }
 
   private getCardVendor(card: string): string {
-    let cardTypeArray = cardsTypes.filter(
-      (c) => c.pan === card.substring(0, 4),
-    );
+    let cardTypeArray = cardsTypes.filter((c) => c.pan === card.substring(0, 4));
     if (cardTypeArray && cardTypeArray.length) {
       return cardTypeArray?.[0]?.type;
     } else {
@@ -827,9 +760,7 @@ export class OperatorService {
   private getCardIcon(card) {
     let cardType = this.getCardVendor(card);
     let cardInfo = bankNames[cardType].find(
-      (c) =>
-        c.prefix.substring(0, c.prefix.length) ===
-        card.substring(0, c.prefix.length),
+      (c) => c.prefix.substring(0, c.prefix.length) === card.substring(0, c.prefix.length),
     );
     return cardInfo?.icon || 'default.svg';
   }

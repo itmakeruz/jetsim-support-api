@@ -69,37 +69,22 @@ export class Helper {
     const timeDiff = currentDate.getTime() - inputDate.getTime();
     const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24)); // kunga o'tkazadi
 
-    if (
-      currentDate.getDate() === inputDate.getDate() &&
-      currentDate.getMonth() === inputDate.getMonth()
-    ) {
+    if (currentDate.getDate() === inputDate.getDate() && currentDate.getMonth() === inputDate.getMonth()) {
       if (lang == 'en') {
-        dateString =
-          today[lang] +
-          ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = today[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       } else {
-        dateString =
-          today[lang] +
-          ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = today[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       }
-    } else if (
-      currentDate.getDate() - inputDate.getDate() === 1 &&
-      currentDate.getMonth() === inputDate.getMonth()
-    ) {
+    } else if (currentDate.getDate() - inputDate.getDate() === 1 && currentDate.getMonth() === inputDate.getMonth()) {
       dateString = yesterday[lang];
       if (lang == 'en') {
         dateString =
-          yesterday[lang] +
-          ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+          yesterday[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       } else {
         dateString =
-          yesterday[lang] +
-          ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+          yesterday[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       }
-    } else if (
-      dayDiff > 1 &&
-      inputDate.getFullYear() === currentDate.getFullYear()
-    ) {
+    } else if (dayDiff > 1 && inputDate.getFullYear() === currentDate.getFullYear()) {
       if (lang == 'en') {
         dateString = `${monthNames[lang][inputDate.getMonth()]} ${inputDate.getDate()} ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       } else {
@@ -118,13 +103,7 @@ export class Helper {
 
   static async uploadMinio(buffer: Buffer, destinationObject, metadata) {
     const bucket = 'storage';
-    return await minioClient.putObject(
-      bucket,
-      destinationObject,
-      buffer,
-      null,
-      metadata,
-    );
+    return await minioClient.putObject(bucket, destinationObject, buffer, null, metadata);
   }
 
   static async detectLanguage(message: string) {
@@ -137,11 +116,7 @@ export class Helper {
     }
   }
 
-  static async uploadLocal(payload: {
-    filename: string;
-    folder: string;
-    link: string;
-  }) {
+  static async uploadLocal(payload: { filename: string; folder: string; link: string }) {
     // Faylni yuklab olish
     const response = await axios.get(payload.link, {
       responseType: 'arraybuffer',

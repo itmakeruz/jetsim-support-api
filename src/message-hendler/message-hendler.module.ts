@@ -6,9 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './auto-answer';
 
 @Module({
-    imports: [
-        ScheduleModule.forRoot()
-    ],
-    providers: [ClientMessageHendler, OperatorMessageHendler, TicketHelper, TasksService]
+  imports: [ScheduleModule.forRoot()],
+  providers: [ClientMessageHendler, OperatorMessageHendler, TicketHelper, TasksService],
 })
 export class MessageHendlerModule {}

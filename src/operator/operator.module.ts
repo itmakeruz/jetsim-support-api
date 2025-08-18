@@ -6,6 +6,6 @@ import { MyHttpService } from 'src/http/http.service';
 @Module({
   imports: [MyHttpService],
   providers: [OperatorService],
-  controllers: [OperatorController]
+  controllers: [OperatorController],
 })
 export class OperatorModule {}

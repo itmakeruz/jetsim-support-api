@@ -13,49 +13,47 @@ import { createChat } from './opanai';
 import { defaultMessages } from 'src/dictonary';
 
 interface SocketInterface {
-  date: string
-  client: Socket
-  server: Server
-  userData: Users
-  ticket_id: number
-  timestamp: number
+  date: string;
+  client: Socket;
+  server: Server;
+  userData: Users;
+  ticket_id: number;
+  timestamp: number;
 }
-
 
 @Injectable()
 export class TasksService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
-  ) {
-
-  }
+  ) {}
   onModuleInit() {
-    this.addCron()
+    this.addCron();
   }
-
 
   private cronJobs: Map<string, SocketInterface> = new Map();
 
   addCron() {
     let job = new CronJob(`* * * * * *`, async () => {
       for (const element of Array.from(this.cronJobs.keys())) {
-        let job = this.cronJobs.get(element)
+        let job = this.cronJobs.get(element);
         if (Date.now() - Number(job.date) > (job?.timestamp ?? 30000)) {
-          this.sendMessage(
-            job.client,
-            job.server,
-            job.userData,
-            job.ticket_id,
-          )
-          this.deleteCronJob(element)
+          this.sendMessage(job.client, job.server, job.userData, job.ticket_id);
+          this.deleteCronJob(element);
         }
       }
-    })
-    job.start()
+    });
+    job.start();
   }
 
-  createCronJob(server: Server, client: Socket, userData: Users, ticket_id: number, lang:string = 'uz', timestamp?:number) {
+  createCronJob(
+    server: Server,
+    client: Socket,
+    userData: Users,
+    ticket_id: number,
+    lang: string = 'uz',
+    timestamp?: number,
+  ) {
     this.cronJobs.set(userData.chat_id, {
       date: Date.now().toString(),
       server: server,
@@ -63,20 +61,22 @@ export class TasksService implements OnModuleInit {
       userData: userData,
       ticket_id,
       timestamp,
-    })
+    });
   }
 
   deleteCronJob(name: string) {
-    this.cronJobs.delete(name)
+    this.cronJobs.delete(name);
   }
 
-  async sendMessage(client: Socket, server: Server, userData: Users, ticket_id: number, lang:string = 'uz') {
-    let ticket = await this.prisma.tickets.findUnique({ where: { id: ticket_id }})
+  async sendMessage(client: Socket, server: Server, userData: Users, ticket_id: number, lang: string = 'uz') {
+    let ticket = await this.prisma.tickets.findUnique({
+      where: { id: ticket_id },
+    });
 
-    let defaultMessage = defaultMessages[ticket.category_id][ticket.lang]
+    let defaultMessage = defaultMessages[ticket.category_id][ticket.lang];
     let sendmessage: Message = {
       content: defaultMessage,
-    }
+    };
 
     let createdMessage = await this.prisma.messages.create({
       data: {
@@ -86,7 +86,7 @@ export class TasksService implements OnModuleInit {
         ticket_id: ticket_id,
         message: sendmessage as any,
         operator_id: 1,
-        is_ready: true
+        is_ready: true,
       },
       select: {
         id: true,
@@ -103,17 +103,17 @@ export class TasksService implements OnModuleInit {
             is_block: true,
             is_online: true,
             messages: true,
-            updated_at: true
-          }
+            updated_at: true,
+          },
         },
         operator: {
           select: {
-            first_name: true
-          }
+            first_name: true,
+          },
         },
         is_ready: true,
-      }
-    })
+      },
+    });
 
     let responseData: SendMessageResponse = {
       id: createdMessage.id,
@@ -124,8 +124,8 @@ export class TasksService implements OnModuleInit {
       is_answer: createdMessage.is_answer,
       author: createdMessage.operator.first_name,
       content_type: createdMessage.content_type,
-      is_ready: createdMessage.is_ready
-    }
-    server.to(client.id).emit(EmitTypes.NEWMESSAGE, responseData)
+      is_ready: createdMessage.is_ready,
+    };
+    server.to(client.id).emit(EmitTypes.NEWMESSAGE, responseData);
   }
 }

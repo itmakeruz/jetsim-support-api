@@ -2,22 +2,9 @@ import { Injectable } from '@nestjs/common';
 import * as http from 'https';
 import * as TelegramBotAPI from 'node-telegram-bot-api';
 import { button } from '../menu/static-menu';
-import {
-  contact,
-  download,
-  download_description,
-  else_message,
-  success_txt,
-  tickets_txt,
-} from '../../dictonary';
+import { contact, download, download_description, else_message, success_txt, tickets_txt } from '../../dictonary';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'fs';
+import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { extname, join } from 'path';
 import { Users } from '@prisma/client';
 import { actionModel } from './dto/actionModel';
@@ -29,10 +16,7 @@ import { SendMessageResponse } from 'src/message-hendler/emitsmodel/sendmessage-
 import { TicketModel, UserModel } from 'src/operator/responses';
 import { SocketGateway } from 'src/app.gateway';
 import { DinamicButton } from '../menu/dinamic-menu';
-import {
-  BadRequestExceptionResponse,
-  OpenTicketResponse,
-} from 'src/responses/AppServiceResponse';
+import { BadRequestExceptionResponse, OpenTicketResponse } from 'src/responses/AppServiceResponse';
 import { OperatorRequest } from 'src/dto/operatorModel';
 import { Server, Socket } from 'socket.io';
 import { TicketHelper } from 'src/message-hendler/ticket-notification';
@@ -68,11 +52,10 @@ export class MessageTextHandler {
         { parse_mode: 'Markdown', reply_markup: button('language') },
       );
     } else if (download.includes(text)) {
-      return bot.sendMessage(
-        chat_id,
-        download_description[user?.lang || 'uz'],
-        { parse_mode: 'Markdown', reply_markup: button('app_link') },
-      );
+      return bot.sendMessage(chat_id, download_description[user?.lang || 'uz'], {
+        parse_mode: 'Markdown',
+        reply_markup: button('app_link'),
+      });
     } else if (contact.includes(text)) {
       action.step = 'ticket';
       let updateUser = await this.prisma.users.update({
@@ -86,16 +69,15 @@ export class MessageTextHandler {
     } else if (action?.step == 'answer') {
       if (!action.category_id.toString().startsWith('_')) {
         try {
-          let ticket: OpenTicketResponse | any =
-            await this.clientService.openTicket(
-              {
-                category_id: Number(action.category_id),
-                message: text,
-                bot_message_id: msg.message_id,
-              },
-              { phone: user.phone_number, uuid: user.chat_id },
-              user?.lang || 'uz',
-            );
+          let ticket: OpenTicketResponse | any = await this.clientService.openTicket(
+            {
+              category_id: Number(action.category_id),
+              message: text,
+              bot_message_id: msg.message_id,
+            },
+            { phone: user.phone_number, uuid: user.chat_id },
+            user?.lang || 'uz',
+          );
           action.ticket_id = Number(ticket.data.id);
           action.step = 'operator';
           await this.prisma.users.update({
@@ -140,10 +122,7 @@ export class MessageTextHandler {
     }
   }
 
-  private async createUser(
-    bot: TelegramBotAPI,
-    msg: TelegramBotAPI.Message,
-  ): Promise<Users> {
+  private async createUser(bot: TelegramBotAPI, msg: TelegramBotAPI.Message): Promise<Users> {
     let chat_id = msg.from.id;
     let firs_name = msg.from.first_name;
 
@@ -152,9 +131,7 @@ export class MessageTextHandler {
     }
 
     let img = await bot.getUserProfilePhotos(chat_id, { limit: 1 });
-    let file_id = img.photos.length
-      ? img.photos[0][img.photos[0].length - 1]?.file_id
-      : false;
+    let file_id = img.photos.length ? img.photos[0][img.photos[0].length - 1]?.file_id : false;
 
     if (file_id) {
       let file_link = await bot.getFileLink(file_id);
@@ -163,15 +140,13 @@ export class MessageTextHandler {
         folder: 'support/' + chat_id,
         link: file_link,
       };
-      const credentials = Buffer.from(
-        `${process.env.FILE_UPLOAD_LOGIN}:${process.env.FILE_UPLOAD_PASSWORD}`,
-      ).toString('base64');
-
-      let response = await this.httpService.post(
-        process.env.FILE_UPLOAD_SERVICE_URL + 'by-link',
-        payload,
-        { headers: { Authorization: `Basic ${credentials}` } },
+      const credentials = Buffer.from(`${process.env.FILE_UPLOAD_LOGIN}:${process.env.FILE_UPLOAD_PASSWORD}`).toString(
+        'base64',
       );
+
+      let response = await this.httpService.post(process.env.FILE_UPLOAD_SERVICE_URL + 'by-link', payload, {
+        headers: { Authorization: `Basic ${credentials}` },
+      });
 
       let created = await this.prisma.users.create({
         data: {
@@ -203,11 +178,7 @@ export class MessageTextHandler {
     }
   }
 
-  async createMessage(
-    data: sendMessageDto,
-    chat_id: string,
-    message_id: number,
-  ) {
+  async createMessage(data: sendMessageDto, chat_id: string, message_id: number) {
     const { message, ticket_id, reply_message_id, content_type } = data;
     let newMessage: Message | any = { content: message };
     let siwitchOperators = await this.prisma.operators.findMany({
@@ -237,19 +208,12 @@ export class MessageTextHandler {
         sendmessage.reply_content = {
           content: Object(message.message)?.content,
           content_type: message.content_type,
-          author:
-            message.is_answer == 0
-              ? message.user.name
-              : message.operator.first_name,
+          author: message.is_answer == 0 ? message.user.name : message.operator.first_name,
         };
       }
     }
 
-    let contentType = reply_message_id
-      ? ContentType.REPLYTEXT
-      : content_type
-        ? content_type
-        : ContentType.TEXT;
+    let contentType = reply_message_id ? ContentType.REPLYTEXT : content_type ? content_type : ContentType.TEXT;
     let createdMessage = await this.prisma.messages.create({
       data: {
         user_id: userData.id,
@@ -294,13 +258,10 @@ export class MessageTextHandler {
       is_ready: createdMessage.is_ready,
     };
     for (const operator of siwitchOperators) {
-      this.socket.server
-        .to(operator.socket_id)
-        .emit(EmitTypes.NEWMESSAGE, responseData);
+      this.socket.server.to(operator.socket_id).emit(EmitTypes.NEWMESSAGE, responseData);
     }
     this.TicketHelper.notification(this.socket.server, ticket_id);
-    newMessage.content =
-      contentType == ContentType.TEXT ? newMessage.content : contentType;
+    newMessage.content = contentType == ContentType.TEXT ? newMessage.content : contentType;
     await this.prisma.tickets.update({
       where: { id: ticket_id },
       data: { status: StatusTypes.AWAITING },
@@ -314,9 +275,7 @@ export class MessageTextHandler {
       phone: createdMessage.user.phone_number,
       is_block: createdMessage.user.is_block,
       is_online: createdMessage.user.is_online,
-      push: createdMessage.user.messages.filter(
-        (msg) => msg.is_ready === false && msg.is_answer === 0,
-      ).length,
+      push: createdMessage.user.messages.filter((msg) => msg.is_ready === false && msg.is_answer === 0).length,
     };
 
     this.socket.server.emit(EmitTypes.NOTIFICATION, responseUser);

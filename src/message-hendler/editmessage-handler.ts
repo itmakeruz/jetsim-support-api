@@ -43,8 +43,7 @@ export class EditMessage {
         text: message,
       });
       if (response?.['ok'] === false) {
-        Object(findMessage.message).content =
-          user_blocked[lang] + '\n\n' + message;
+        Object(findMessage.message).content = user_blocked[lang] + '\n\n' + message;
         await this.prisma.messages.update({
           where: { id: findMessage.id },
           data: { message: findMessage.message },
@@ -69,9 +68,7 @@ export class EditMessage {
       date: findMessage.created_at,
       base_url: this.config.get('FILES_BASE_URL'),
       is_answer: findMessage.is_answer,
-      author: findMessage.is_answer
-        ? findMessage.operator.first_name
-        : findMessage.user.name,
+      author: findMessage.is_answer ? findMessage.operator.first_name : findMessage.user.name,
       content_type: findMessage.content_type,
       is_ready: true,
     };

@@ -5,11 +5,11 @@ import { IsDate, IsOptional, MinDate } from 'class-validator';
 export class ReportQueriesDto {
   @Transform(({ value }) => value && new Date(value))
   @IsDate()
-  @ApiProperty({type: Date})
+  @ApiProperty({ type: Date })
   fromDate?: Date;
 
   @Transform(({ value }) => value && new Date(value))
   @IsDate()
-  @ApiProperty({type: Date})
+  @ApiProperty({ type: Date })
   toDate?: Date;
 }

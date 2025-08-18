@@ -1,3 +1,3 @@
-export * from './chatModel'
-export * from './ticketModel'
-export * from './usersModel'
+export * from './chatModel';
+export * from './ticketModel';
+export * from './usersModel';
