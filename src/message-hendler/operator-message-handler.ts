@@ -47,29 +47,23 @@ export class OperatorMessageHendler {
     });
 
     if (!ticket)
-      return server
-        .to(client.id)
-        .emit(EmitTypes.EXCEOPTION, {
-          status: 403,
-          error: 'Bad Request',
-          message: ticket_notfound[lang],
-        });
+      return server.to(client.id).emit(EmitTypes.EXCEOPTION, {
+        status: 403,
+        error: 'Bad Request',
+        message: ticket_notfound[lang],
+      });
     if (ticket?.operator_id != null && ticket?.operator_id != user.user_id)
-      return server
-        .to(client.id)
-        .emit(EmitTypes.EXCEOPTION, {
-          status: 403,
-          error: 'Bad Request',
-          message: ticket_opened_error[lang],
-        });
+      return server.to(client.id).emit(EmitTypes.EXCEOPTION, {
+        status: 403,
+        error: 'Bad Request',
+        message: ticket_opened_error[lang],
+      });
     if (!operator.user_id)
-      return server
-        .to(client.id)
-        .emit(EmitTypes.EXCEOPTION, {
-          status: 403,
-          error: 'Bad Request',
-          message: unable_user_error[lang],
-        });
+      return server.to(client.id).emit(EmitTypes.EXCEOPTION, {
+        status: 403,
+        error: 'Bad Request',
+        message: unable_user_error[lang],
+      });
     let sendmessage: Message = { content: data.message };
     await this.prisma.tickets.update({
       where: { id: data.ticket_id },
@@ -89,13 +83,11 @@ export class OperatorMessageHendler {
         },
       });
       if (!message)
-        server
-          .to(client.id)
-          .emit(EmitTypes.EXCEOPTION, {
-            status: 403,
-            error: 'Bad Request',
-            message: message_notfound[lang],
-          });
+        server.to(client.id).emit(EmitTypes.EXCEOPTION, {
+          status: 403,
+          error: 'Bad Request',
+          message: message_notfound[lang],
+        });
       newMessage.reply_message_id = message.id;
       Object(ticket.user.action)?.is_telegram_user
         ? (sendmessage.reply_bot_message_id = Number(message.bot_id))
