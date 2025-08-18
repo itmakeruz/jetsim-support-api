@@ -10,9 +10,8 @@ async function bootstrap() {
   app.setGlobalPrefix('chat');
 
   const config = new DocumentBuilder()
-    .setTitle('Support chat')
-    .setDescription('The Support chat API description')
-    .setVersion('0.2.1')
+    .setTitle('Support Chat jetsim.ru')
+    .setDescription('The Support chat jetsim.ru API description')
     .addBearerAuth(
       {
         description: 'Please enter token in following format: Bearer <JWT>',

@@ -93,10 +93,11 @@ export class OperatorMessageHendler {
     }
 
     let contentType = data.reply_message_id ? ContentType.REPLYTEXT : ContentType.TEXT;
+    console.log(operator);
 
     let createdMessage = await this.prisma.messages.create({
       data: {
-        user_id: ticket.user.id,
+        user_id: operator.user_id,
         is_answer: 1,
         operator_id: user.user_id,
         content_type: contentType,
