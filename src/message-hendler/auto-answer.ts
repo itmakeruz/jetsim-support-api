@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SchedulerRegistry, Timeout } from '@nestjs/schedule';
 import { log } from 'console';
-import { CronJob } from 'cron';
+// import { CronJob } from 'cron';
 import { Server, Socket } from 'socket.io';
 import { ContentType, EmitTypes } from 'src/dto/types';
 import { SendMessageResponse } from './emitsmodel/sendmessage-response';
@@ -28,45 +28,45 @@ export class TasksService implements OnModuleInit {
     private config: ConfigService,
   ) {}
   onModuleInit() {
-    this.addCron();
+    // this.addCron();
   }
 
   private cronJobs: Map<string, SocketInterface> = new Map();
 
-  addCron() {
-    let job = new CronJob(`* * * * * *`, async () => {
-      for (const element of Array.from(this.cronJobs.keys())) {
-        let job = this.cronJobs.get(element);
-        if (Date.now() - Number(job.date) > (job?.timestamp ?? 30000)) {
-          this.sendMessage(job.client, job.server, job.userData, job.ticket_id);
-          this.deleteCronJob(element);
-        }
-      }
-    });
-    job.start();
-  }
+  // addCron() {
+  //   let job = new CronJob(`* * * * * *`, async () => {
+  //     for (const element of Array.from(this.cronJobs.keys())) {
+  //       let job = this.cronJobs.get(element);
+  //       if (Date.now() - Number(job.date) > (job?.timestamp ?? 30000)) {
+  //         this.sendMessage(job.client, job.server, job.userData, job.ticket_id);
+  //         this.deleteCronJob(element);
+  //       }
+  //     }
+  //   });
+  //   job.start();
+  // }
 
-  createCronJob(
-    server: Server,
-    client: Socket,
-    userData: Users,
-    ticket_id: number,
-    lang: string = 'uz',
-    timestamp?: number,
-  ) {
-    this.cronJobs.set(userData.chat_id, {
-      date: Date.now().toString(),
-      server: server,
-      client: client,
-      userData: userData,
-      ticket_id,
-      timestamp,
-    });
-  }
+  // createCronJob(
+  //   server: Server,
+  //   client: Socket,
+  //   userData: Users,
+  //   ticket_id: number,
+  //   lang: string = 'uz',
+  //   timestamp?: number,
+  // ) {
+  //   this.cronJobs.set(userData.chat_id, {
+  //     date: Date.now().toString(),
+  //     server: server,
+  //     client: client,
+  //     userData: userData,
+  //     ticket_id,
+  //     timestamp,
+  //   });
+  // }
 
-  deleteCronJob(name: string) {
-    this.cronJobs.delete(name);
-  }
+  // deleteCronJob(name: string) {
+  //   this.cronJobs.delete(name);
+  // }
 
   async sendMessage(client: Socket, server: Server, userData: Users, ticket_id: number, lang: string = 'uz') {
     let ticket = await this.prisma.tickets.findUnique({
