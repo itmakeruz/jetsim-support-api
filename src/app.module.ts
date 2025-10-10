@@ -30,6 +30,7 @@ import { ReportModule } from './report/report.module';
 import { MyHttpModule } from './http/http.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         index: false,
       },
     }),
+    CategoryModule,
   ],
   providers: [
     JwtStrategy,

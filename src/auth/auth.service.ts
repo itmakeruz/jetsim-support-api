@@ -29,7 +29,12 @@ export class AuthService {
       throw new BadRequestException('Invalid login or Password');
     }
     await this.socket.server.to(user.socket_id).emit('unautharization', { status: '401', message: 'Unautharization' });
-    return await this.jwtSign({ user_id: user.id, name: user.first_name });
+    return {
+      success: true,
+      data: {
+        access_token: await this.jwtSign({ user_id: user.id, name: user.first_name }),
+      },
+    };
   }
 
   async signup(data: RegisterDto, lang) {
@@ -51,10 +56,14 @@ export class AuthService {
       select: { login: true, password: true },
     });
     updateuser.password = password;
-    return updateuser;
+    return {
+      success: true,
+      message: '',
+      data: null,
+    };
   }
 
-  async getme(user: OperatorRequest, lang): Promise<GetMeResponse> {
+  async getme(user: OperatorRequest, lang) {
     let userInDb = await this.prisma.operators.findUnique({
       where: { id: user.user_id },
     });
@@ -68,7 +77,11 @@ export class AuthService {
       login: userInDb.login,
     };
 
-    return result;
+    return {
+      success: true,
+      message: '',
+      data: result,
+    };
   }
 
   private async jwtSign(payload: object): Promise<{ access_token: string }> {
