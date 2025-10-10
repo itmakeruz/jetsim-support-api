@@ -44,7 +44,8 @@ import { Helper } from './helper/helper';
 import { TasksService } from './message-hendler/auto-answer';
 import { creteThreads } from './message-hendler/opanai';
 import { MyHttpService } from './http/http.service';
-const FormData = require('form-data');
+import FormData from 'form-data';
+import { saveFileLocal } from './helper/file-upload.helper';
 
 @Injectable()
 export class AppService {
@@ -518,7 +519,17 @@ export class AppService {
       'Content-Type': file.mimetype,
     };
 
-    await Helper.uploadMinio(file.buffer, path, metaData);
+    let payload = {
+      filename: `${random_id}`,
+      folder:
+        'app_images/' +
+        ticket.user_id +
+        '/images/' +
+        `${date.toLocaleDateString().split('.').join('_')}/${date.toLocaleTimeString('ru-RU', { hour: 'numeric' })}`,
+      link: path,
+    };
+
+    await saveFileLocal(path, payload);
 
     let newMessage: Message | any = {
       content: path,
