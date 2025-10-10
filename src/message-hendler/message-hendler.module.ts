@@ -3,10 +3,10 @@ import { ClientMessageHendler } from './client-message-handler';
 import { OperatorMessageHendler } from './operator-message-handler';
 import { TicketHelper } from './ticket-notification';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TasksService } from './auto-answer';
+// import { TasksService } from './auto-answer';
 
 @Module({
   imports: [ScheduleModule.forRoot()],
-  providers: [ClientMessageHendler, OperatorMessageHendler, TicketHelper, TasksService],
+  providers: [ClientMessageHendler, OperatorMessageHendler, TicketHelper],
 })
 export class MessageHendlerModule {}

@@ -22,7 +22,7 @@ export class ClientMessageHendler {
     private prisma: PrismaService,
     private ticketHelper: TicketHelper,
     private config: ConfigService,
-    private task: TasksService,
+    // private task: TasksService,
   ) {}
 
   async sendMessage(data: sendMessageDto, client: Socket, server: Server) {
@@ -180,12 +180,12 @@ export class ClientMessageHendler {
     //     is_ready: true
     // }
     // server.to(client.id).emit(EmitTypes.NEWMESSAGE, responsemessage)
-    if ([8].includes(ticket.category_id)) this.autoAnswer(server, client, userData, ticket_id);
+    // if ([8].includes(ticket.category_id)) this.autoAnswer(server, client, userData, ticket_id);
   }
 
-  async autoAnswer(server: Server, client: Socket, userData: Users, ticket_id: number) {
-    this.task.createCronJob(server, client, userData, ticket_id);
-  }
+  // async autoAnswer(server: Server, client: Socket, userData: Users, ticket_id: number) {
+  //   this.task.createCronJob(server, client, userData, ticket_id);
+  // }
 
   async createMessage(message: string, server: Server, client: Socket, userData: Users, ticket_id: number) {
     let sendmessage: Message = {

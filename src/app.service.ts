@@ -41,7 +41,7 @@ import { botSendFile, botSendMesssage } from './telegram-bot/hendlers/botsender'
 import { EventType } from './telegram-bot/hendlers/dto/actionModel';
 import { TicketHelper } from './message-hendler/ticket-notification';
 import { Helper } from './helper/helper';
-import { TasksService } from './message-hendler/auto-answer';
+// import { TasksService } from './message-hendler/auto-answer';
 import { creteThreads } from './message-hendler/opanai';
 import { MyHttpService } from './http/http.service';
 import FormData from 'form-data';
@@ -55,7 +55,7 @@ export class AppService {
     private httpService: MyHttpService,
     public config: ConfigService,
     private ticketHelper: TicketHelper,
-    private task: TasksService,
+    // private task: TasksService,
   ) {}
 
   async getTicketsList(

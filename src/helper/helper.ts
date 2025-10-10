@@ -5,13 +5,13 @@ import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const minioClient = new Minio.Client({
-  endPoint: process.env.MINIO_HOST,
-  port: +process.env.MINIO_PORT,
-  useSSL: false,
-  accessKey: process.env.MINIO_ACCESS_KEY,
-  secretKey: process.env.MINIO_SECRET_KEY,
-});
+// const minioClient = new Minio.Client({
+//   endPoint: process.env.MINIO_HOST,
+//   port: +process.env.MINIO_PORT,
+//   useSSL: false,
+//   accessKey: process.env.MINIO_ACCESS_KEY,
+//   secretKey: process.env.MINIO_SECRET_KEY,
+// });
 // import Client from "./detect-language";
 
 // let detectLanguage = new Client(dotenv.config().parsed.DETECT_LANGUAGE_KEY)
@@ -101,10 +101,10 @@ export class Helper {
     return dateString;
   }
 
-  static async uploadMinio(buffer: Buffer, destinationObject, metadata) {
-    const bucket = 'storage';
-    return await minioClient.putObject(bucket, destinationObject, buffer, null, metadata);
-  }
+  // static async uploadMinio(buffer: Buffer, destinationObject, metadata) {
+  //   const bucket = 'storage';
+  //   return await minioClient.putObject(bucket, destinationObject, buffer, null, metadata);
+  // }
 
   static async detectLanguage(message: string) {
     try {

@@ -26,7 +26,7 @@ import { DeleteMessage } from './message-hendler/delete-message-hendler';
 import { TicketHelper } from './message-hendler/ticket-notification';
 import * as dotenv from 'dotenv';
 import { ReportModule } from './report/report.module';
-import { TasksService } from './message-hendler/auto-answer';
+// import { TasksService } from './message-hendler/auto-answer';
 import { MyHttpModule } from './http/http.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -59,7 +59,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     SocketGateway,
     OperatorMessageHendler,
     EditMessage,
-    TasksService,
+    // TasksService,
     ClientMessageHendler,
     DinamicButton,
     MessageTextHandler,
