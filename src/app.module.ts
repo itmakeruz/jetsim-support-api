@@ -30,7 +30,7 @@ import { ReportModule } from './report/report.module';
 import { MyHttpModule } from './http/http.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { CategoryModule } from './category/category.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -53,7 +53,7 @@ import { CategoryModule } from './category/category.module';
         index: false,
       },
     }),
-    CategoryModule,
+    DashboardModule,
   ],
   providers: [
     JwtStrategy,

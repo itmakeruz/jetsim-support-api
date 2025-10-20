@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RegisterDto, loginDto } from './dto';
+import { RegisterDto, UpdateUserDto, loginDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { OperatorRequest } from 'src/dto/operatorModel';
 import { GetMeResponse } from './dto/response';
@@ -56,6 +56,40 @@ export class AuthService {
       select: { login: true, password: true },
     });
     updateuser.password = password;
+    return {
+      success: true,
+      message: '',
+      data: null,
+    };
+  }
+
+  async updateUser(id: number, data: UpdateUserDto) {
+    const operator = await this.prisma.operators.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!operator) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Unexpected error',
+          data: null,
+        },
+        404,
+      );
+    }
+
+    await this.prisma.operators.update({
+      where: {
+        id: id,
+      },
+      data: {
+        login: data?.login ?? operator?.login,
+        password: data?.password ? crypto.createHash('md5').update(data?.password).digest('hex') : operator?.password,
+      },
+    });
     return {
       success: true,
       message: '',

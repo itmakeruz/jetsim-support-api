@@ -1,13 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CategoryService } from './category.service';
+import { DashboardService } from './dashboard.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
-@ApiTags('Categories')
-@Controller('categories')
-export class CategoryController {
-  constructor(private readonly categoriesService: CategoryService) {}
+@ApiTags('Dashboard')
+@Controller('dashboard')
+export class DashboardController {
+  constructor(private readonly categoriesService: DashboardService) {}
 
   @Post()
   @ApiOperation({ summary: 'Kategoriya yaratish' })
@@ -21,6 +21,14 @@ export class CategoryController {
   @ApiResponse({ status: 200, description: 'Kategoriyalar ro‘yxati qaytarildi.' })
   findAll() {
     return this.categoriesService.findAll();
+  }
+
+  @Get('operators')
+  @ApiOperation({ summary: 'Operatorlarni Olish' })
+  @ApiResponse({ status: 200, description: 'Operatorlarni Olish.' })
+  // @ApiResponse({ status: 404, description: 'Kategoriya topilmadi.' })
+  getOperators() {
+    return this.categoriesService.getOperators();
   }
 
   @Get(':id')

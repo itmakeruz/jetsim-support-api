@@ -4,7 +4,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
-export class CategoryService {
+export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateCategoryDto) {
@@ -58,6 +58,23 @@ export class CategoryService {
       success: true,
       message: '',
       data: null,
+    };
+  }
+
+  async getOperators() {
+    const operators = await this.prisma.operators.findMany({
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        login: true,
+        is_active: true,
+      },
+    });
+    return {
+      success: true,
+      message: '',
+      data: operators,
     };
   }
 }
