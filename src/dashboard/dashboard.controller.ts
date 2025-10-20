@@ -9,14 +9,14 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class DashboardController {
   constructor(private readonly categoriesService: DashboardService) {}
 
-  @Post()
+  @Post('category')
   @ApiOperation({ summary: 'Kategoriya yaratish' })
   @ApiResponse({ status: 201, description: 'Kategoriya muvaffaqiyatli yaratildi.' })
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);
   }
 
-  @Get()
+  @Get('category')
   @ApiOperation({ summary: 'Barcha kategoriyalar ro‘yxati' })
   @ApiResponse({ status: 200, description: 'Kategoriyalar ro‘yxati qaytarildi.' })
   findAll() {
@@ -31,7 +31,7 @@ export class DashboardController {
     return this.categoriesService.getOperators();
   }
 
-  @Get(':id')
+  @Get('category/:id')
   @ApiOperation({ summary: 'ID bo‘yicha kategoriya topish' })
   @ApiResponse({ status: 200, description: 'Kategoriya topildi.' })
   @ApiResponse({ status: 404, description: 'Kategoriya topilmadi.' })
@@ -39,7 +39,7 @@ export class DashboardController {
     return this.categoriesService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('category/:id')
   @ApiOperation({ summary: 'Kategoriyani yangilash' })
   @ApiResponse({ status: 200, description: 'Kategoriya yangilandi.' })
   @ApiResponse({ status: 404, description: 'Kategoriya topilmadi.' })
@@ -47,7 +47,7 @@ export class DashboardController {
     return this.categoriesService.update(id, dto);
   }
 
-  @Delete(':id')
+  @Delete('category/:id')
   @ApiOperation({ summary: 'Kategoriyani o‘chirish' })
   @ApiResponse({ status: 200, description: 'Kategoriya o‘chirildi.' })
   @ApiResponse({ status: 404, description: 'Kategoriya topilmadi.' })
