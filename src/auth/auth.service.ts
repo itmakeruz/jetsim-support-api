@@ -29,10 +29,11 @@ export class AuthService {
       throw new BadRequestException('Invalid login or Password');
     }
     await this.socket.server.to(user.socket_id).emit('unautharization', { status: '401', message: 'Unautharization' });
+    const access_token = await this.jwtSign({ user_id: user.id, name: user.first_name });
     return {
       success: true,
       data: {
-        access_token: await this.jwtSign({ user_id: user.id, name: user.first_name }),
+        access_token,
       },
     };
   }
