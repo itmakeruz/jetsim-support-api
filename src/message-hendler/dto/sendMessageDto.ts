@@ -37,3 +37,9 @@ export class deleteMessageDto {
   @ApiProperty({ type: String })
   message: string;
 }
+
+export class exitChatDto {
+  @IsNumber()
+  @ApiProperty({ type: Number })
+  ticket_id: number;
+}

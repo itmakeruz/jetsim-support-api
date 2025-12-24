@@ -45,6 +45,7 @@ export enum EmitTypes {
   DELETEMESSAGE = 'deletemessage',
   UPDATEDUSER = 'updateduser',
   APPNEWMESSAGE = 'appSendMessage',
+  EXITCHAT = 'exitchat',
 }
 
 export enum MimeTypes {

@@ -14,13 +14,14 @@ import { JwtService } from '@nestjs/jwt';
 import { OperatorMessageHendler } from './message-hendler/operator-message-handler';
 import { MyWebSocketGuard } from './auth/socket.guard';
 import { ClientMessageHendler } from './message-hendler/client-message-handler';
-import { deleteMessageDto, editMessageDto, sendMessageDto } from './message-hendler/dto/sendMessageDto';
+import { deleteMessageDto, editMessageDto, exitChatDto, sendMessageDto } from './message-hendler/dto/sendMessageDto';
 import { ZodValidationPipe } from './message-hendler/socket-validator-pipe/validator-service';
 import { DeleteMessageData, EditMessageData, SendMessageData } from './message-hendler/socket-validator-pipe/schema';
 import { EmitTypes } from './dto/types';
 import { EditMessage } from './message-hendler/editmessage-handler';
 import { DeleteMessage } from './message-hendler/delete-message-hendler';
 import { PrismaNestService } from './prisma/nestjs.prisma.service';
+import { ExitChat } from './message-hendler/exit-chat';
 
 @WebSocketGateway({
   cors: {
@@ -37,6 +38,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private clientService: ClientMessageHendler,
     private editmessage: EditMessage,
     private deletemessage: DeleteMessage,
+    private readonly exitchat: ExitChat,
   ) {}
 
   @WebSocketServer() server: Server;
@@ -47,12 +49,21 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (client?.user?.user_id) {
         await this.prisma.operators.update({
-          where: { id: client.user.user_id },
-          data: { is_active: true, socket_id: client.id },
+          where: {
+            id: client.user.user_id,
+          },
+          data: {
+            is_active: true,
+            socket_id: client.id,
+            ticket_id: null,
+            user_id: null,
+          },
         });
       } else if (client?.user?.uuid) {
         await this.prisma.users.update({
-          where: { chat_id: client.user.uuid },
+          where: {
+            chat_id: client.user.uuid,
+          },
           data: { is_online: true, socket_id: client.id },
         });
       }
@@ -100,6 +111,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(EmitTypes.DELETEMESSAGE)
   async deleteMessage(@MessageBody() body: deleteMessageDto, @ConnectedSocket() client: Socket) {
     await this.deletemessage.deleteMessage(body, client, this.server);
+  }
+
+  @UsePipes(new ZodValidationPipe(DeleteMessageData))
+  @SubscribeMessage(EmitTypes.DELETEMESSAGE)
+  async exitChat(@MessageBody() body: exitChatDto, @ConnectedSocket() client: Socket) {
+    await this.exitchat.exitChat(body, client, this.server);
   }
 
   private async jwtVerify(client) {

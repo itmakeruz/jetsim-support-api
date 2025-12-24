@@ -1,7 +1,7 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Server, Socket } from 'socket.io';
 import { Injectable } from '@nestjs/common';
-import { sendMessageDto } from 'src/message-hendler/dto/sendMessageDto';
+import { exitChatDto, sendMessageDto } from 'src/message-hendler/dto/sendMessageDto';
 import { ClientRequest } from 'src/dto/clientModel';
 import { Message } from 'src/dto/openTicketDto';
 import { WsException } from '@nestjs/websockets';
