@@ -31,6 +31,7 @@ import { MyHttpModule } from './http/http.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ExitChat } from './message-hendler/exit-chat';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     OperatorService,
     TelegramBotService,
     AuthService,
+    ExitChat,
   ],
   controllers: [renderController, OperatorController, AuthController],
 })
