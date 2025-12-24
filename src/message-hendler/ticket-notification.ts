@@ -53,6 +53,7 @@ export class TicketHelper {
             status: ticket.status,
             request_close: ticket.request_close,
             is_online: ticket.user.is_online,
+            ticket_id: ticket_id,
           };
           server.to(ticket?.operator?.socket_id).emit(EmitTypes.UPDATETICKET, response);
         }

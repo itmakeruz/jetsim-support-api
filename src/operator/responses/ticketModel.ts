@@ -45,6 +45,9 @@ export class TicketModel {
 
   @ApiProperty({ type: Boolean })
   is_online: boolean;
+
+  @ApiProperty({ type: Number })
+  ticket_id?: number;
 }
 
 export class CloseTicketResponse {
