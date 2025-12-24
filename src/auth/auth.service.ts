@@ -119,7 +119,7 @@ export class AuthService {
     };
   }
 
-  private async jwtSign(payload: object): Promise<{ access_token: string }> {
-    return { access_token: await this.jwtService.signAsync(payload) };
+  private async jwtSign(payload: object): Promise<String> {
+    return await this.jwtService.signAsync(payload);
   }
 }
