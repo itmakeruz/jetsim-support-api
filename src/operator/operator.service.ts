@@ -415,6 +415,7 @@ export class OperatorService {
         is_block: oneData.user.is_block,
         is_online: oneData.user.is_online,
         push: pushCount,
+        user_image: oneData.user.photo,
       },
       ticket: {
         id: oneData.tickets.id,

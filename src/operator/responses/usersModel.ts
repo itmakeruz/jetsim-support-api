@@ -32,6 +32,9 @@ export class UserModel {
 
   @ApiProperty({ type: Number })
   ticket_id?: number;
+
+  @ApiProperty({ type: Number })
+  user_image?: string;
 }
 
 export class UsersResponse {
