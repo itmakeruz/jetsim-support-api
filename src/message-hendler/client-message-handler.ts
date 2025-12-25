@@ -152,7 +152,7 @@ export class ClientMessageHendler {
       chat_id: createdMessage.user.chat_id,
       name: createdMessage.user.name,
       last_message: newMessage,
-      date: Helper.formatByMonthName(createdMessage.user.updated_at, 'ru'),
+      date: Helper.formatByMonthName(createdMessage.created_at, 'ru'),
       phone: createdMessage.user.phone_number,
       is_block: createdMessage.user.is_block,
       is_online: createdMessage.user.is_online,
