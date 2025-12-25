@@ -248,7 +248,7 @@ export class OperatorService {
           select: {
             id: true,
             categories: true,
-            user: { select: { id: true, name: true, is_online: true } },
+            user: { select: { id: true, name: true, is_online: true, photo: true } },
             messages: { orderBy: { created_at: 'desc' } },
             updated_at: true,
             status: true,
