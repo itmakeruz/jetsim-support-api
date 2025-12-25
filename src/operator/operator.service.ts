@@ -416,6 +416,7 @@ export class OperatorService {
         is_online: oneData.user.is_online,
         push: pushCount,
         user_image: oneData.user.photo,
+        base_url: this.config.get('FILES_BASE_URL'),
       },
       ticket: {
         id: oneData.tickets.id,

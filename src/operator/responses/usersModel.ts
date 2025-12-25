@@ -35,6 +35,9 @@ export class UserModel {
 
   @ApiProperty({ type: Number })
   user_image?: string;
+
+  @ApiProperty({ type: String })
+  base_url?: string;
 }
 
 export class UsersResponse {
