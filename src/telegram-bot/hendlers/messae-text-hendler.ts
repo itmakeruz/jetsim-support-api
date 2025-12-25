@@ -44,8 +44,12 @@ export class MessageTextHandler {
     let user = await this.prisma.users.findUnique({
       where: { chat_id: chat_id.toString() },
     });
+    console.log(user);
+
     let action: actionModel = Object(user?.action);
     if (text == '/start') {
+      console.log(text);
+
       if (!user) this.createUser(bot, msg);
       return bot.sendMessage(
         chat_id,
