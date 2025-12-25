@@ -159,6 +159,8 @@ export class MessageTextHandler {
         },
       });
 
+      console.log(created);
+
       return created;
     } else {
       let imgPath = chat_id + '/default.jpg';
