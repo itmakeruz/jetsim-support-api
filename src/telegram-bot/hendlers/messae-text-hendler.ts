@@ -178,7 +178,7 @@ export class MessageTextHandler {
 
       return created;
     } else {
-      let imgPath = chat_id + '/default.jpg';
+      let imgPath = 'files' + chat_id + '/default.jpg';
       writeFileSync(
         join(process.cwd(), 'files/' + chat_id, 'default.jpg'),
         readFileSync('src/telegram-bot/hendlers/img/default.jpg'),
