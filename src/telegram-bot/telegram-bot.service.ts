@@ -282,7 +282,7 @@ export class TelegramBotService {
                 category_id: Number(action.category_id),
                 message: text,
                 bot_message_id: msg.message_id,
-                content_type: ContentType.VIDEO,
+                content_type: ContentType.TELEGRAM_VIDEO,
               },
               { phone: user.phone_number, uuid: user.chat_id },
               user?.lang || 'ru',
@@ -310,7 +310,7 @@ export class TelegramBotService {
           let payload: sendMessageDto = {
             message: text,
             ticket_id: action.ticket_id,
-            content_type: ContentType.VIDEO,
+            content_type: ContentType.TELEGRAM_VIDEO,
           };
           if (reply_message_id) payload.reply_message_id = reply_message_id;
           await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
@@ -320,7 +320,7 @@ export class TelegramBotService {
         let payload: sendMessageDto = {
           message: text,
           ticket_id: action.ticket_id,
-          content_type: ContentType.VIDEO,
+          content_type: ContentType.TELEGRAM_VIDEO,
         };
         if (reply_message_id) payload.reply_message_id = reply_message_id;
         await this.message.createMessage(payload, chat_id.toString(), msg.message_id);
