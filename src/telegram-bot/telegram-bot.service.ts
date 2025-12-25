@@ -167,6 +167,8 @@ export class TelegramBotService {
       if (msg.video.file_size / 1024 / 1024 > 20) return bot.sendMessage(chat_id, max_file_size_error[user.lang]);
 
       let file_link = await bot.getFileLink(file_id);
+      console.log(file_link, file_id, msg.from, 'COMING RESPONSE');
+
       let date = new Date();
       let random_id = (100000 + Math.random() * 900000) | 0;
 

@@ -9,6 +9,7 @@ export enum ContentType {
   REPLYPHOTO = 'reply_photo',
   REPLYVIDEO = 'reply_video',
   REPLYVOICE = 'reply_voice',
+  TELEGRAM_VIDEO = 'telegram_video',
 }
 
 export enum StatusTypes {
