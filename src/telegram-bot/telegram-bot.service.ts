@@ -52,17 +52,17 @@ export class TelegramBotService {
         where: { chat_id: chat_id.toString() },
       });
 
-      if (!user) {
-        let newUser = await this.prisma.users.create({
-          data: {
-            chat_id: chat_id.toString(),
-            phone_number: phone_number,
-            lang: 'ru',
-            is_online: true,
-          },
-        });
-        user = newUser;
-      }
+      // if (!user) {
+      //   let newUser = await this.prisma.users.create({
+      //     data: {
+      //       chat_id: chat_id.toString(),
+      //       phone_number: phone_number,
+      //       lang: 'ru',
+      //       is_online: true,
+      //     },
+      //   });
+      //   user = newUser;
+      // }
 
       let action: actionModel = Object(user?.action);
       action.step = 'ticket';
