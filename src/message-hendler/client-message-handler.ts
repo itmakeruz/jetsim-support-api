@@ -156,6 +156,7 @@ export class ClientMessageHendler {
       is_block: createdMessage.user.is_block,
       is_online: createdMessage.user.is_online,
       push: createdMessage.user.messages.filter((msg) => msg.is_ready === false && msg.is_answer === 0).length,
+      ticket_id: ticket_id,
     };
     console.log('responseUser', responseUser);
 

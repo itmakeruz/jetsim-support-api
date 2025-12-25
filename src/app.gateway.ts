@@ -114,7 +114,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @UsePipes(new ZodValidationPipe(DeleteMessageData))
-  @SubscribeMessage(EmitTypes.DELETEMESSAGE)
+  @SubscribeMessage(EmitTypes.EXITCHAT)
   async exitChat(@MessageBody() body: exitChatDto, @ConnectedSocket() client: Socket) {
     await this.exitchat.exitChat(body, client, this.server);
   }

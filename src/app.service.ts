@@ -336,6 +336,7 @@ export class AppService {
         is_online: newuser.is_online,
         last_message: newMessage,
         push: 1,
+        ticket_id: newTicket.id,
       };
 
       this.socket.server.emit(EmitTypes.NOTIFICATION, usersData);
@@ -400,6 +401,7 @@ export class AppService {
       is_online: user.is_online,
       last_message: user.messages[0]?.message || { content: '' },
       push: user.messages.filter((msg) => msg.is_ready === false && msg.is_answer == 0)?.length + 1,
+      ticket_id: newTicket.id,
     };
 
     this.socket.server.emit(EmitTypes.NOTIFICATION, usersData);

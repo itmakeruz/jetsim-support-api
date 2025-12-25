@@ -29,6 +29,9 @@ export class UserModel {
 
   @ApiProperty({ type: Number })
   push: number;
+
+  @ApiProperty({ type: Number })
+  ticket_id?: number;
 }
 
 export class UsersResponse {

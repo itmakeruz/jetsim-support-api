@@ -186,6 +186,7 @@ export class OperatorMessageHendler {
         is_block: createdMessage.user.is_block,
         is_online: createdMessage.user.is_online,
         push: messages,
+        ticket_id: ticket.id,
       };
       server.to(operator.socket_id).emit(EmitTypes.NOTIFICATION, user);
     });
