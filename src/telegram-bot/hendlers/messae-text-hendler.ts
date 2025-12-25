@@ -24,6 +24,7 @@ import { ConfigService } from '@nestjs/config';
 import { MyHttpService } from 'src/http/http.service';
 import { botSendMesssage } from './botsender';
 import { Helper } from 'src/helper/helper';
+import { saveFileLocal } from 'src/helper/file-upload.helper';
 
 @Injectable()
 export class MessageTextHandler {
@@ -149,19 +150,31 @@ export class MessageTextHandler {
         folder: 'support/' + chat_id,
         link: file_link,
       };
-      const credentials = Buffer.from(`${process.env.FILE_UPLOAD_LOGIN}:${process.env.FILE_UPLOAD_PASSWORD}`).toString(
-        'base64',
-      );
+      let response = await saveFileLocal(file_link, payload);
 
-      let response = await this.httpService.post(process.env.FILE_UPLOAD_SERVICE_URL + 'by-link', payload, {
-        headers: { Authorization: `Basic ${credentials}` },
-      });
+      // let payload = {
+      //   filename: `${random_id}`,
+      //   folder:
+      //     'support/' +
+      //     chat_id +
+      //     '/voice/' +
+      //     `${date.toLocaleDateString().split('.').join('_')}/${date.toLocaleTimeString('ru-RU', { hour: 'numeric' })}`,
+      //   link: file_link,
+      // };
+
+      // const credentials = Buffer.from(`${process.env.FILE_UPLOAD_LOGIN}:${process.env.FILE_UPLOAD_PASSWORD}`).toString(
+      //   'base64',
+      // );
+
+      // let response = await this.httpService.post(process.env.FILE_UPLOAD_SERVICE_URL + 'by-link', payload, {
+      //   headers: { Authorization: `Basic ${credentials}` },
+      // });
 
       let created = await this.prisma.users.create({
         data: {
           name: firs_name,
           chat_id: chat_id.toString(),
-          photo: response.data?.path ?? '',
+          photo: response ?? '',
           is_online: true,
           action: { is_telegram_user: true },
         },
