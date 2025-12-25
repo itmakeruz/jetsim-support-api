@@ -281,7 +281,6 @@ export class OperatorService {
         subject: ticket.categories.name[lang],
         user_name: ticket.user.name,
         user_image: ticket.user.photo,
-        base_url: this.config.get('FILES_BASE_URL'),
         color: ticket.categories.color,
         last_message:
           ticket.messages[0]?.content_type != ContentType.TEXT

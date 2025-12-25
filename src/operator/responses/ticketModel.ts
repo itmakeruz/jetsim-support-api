@@ -51,9 +51,6 @@ export class TicketModel {
 
   @ApiProperty({ type: String })
   user_image?: string;
-
-  @ApiProperty({ type: String })
-  base_url?: string;
 }
 
 export class CloseTicketResponse {

@@ -45,6 +45,7 @@ export class MessageTextHandler {
     let user = await this.prisma.users.findUnique({
       where: { chat_id: chat_id.toString() },
     });
+    console.log(user);
 
     let action: actionModel = Object(user?.action);
     if (text == '/start') {
@@ -177,9 +178,9 @@ export class MessageTextHandler {
 
       return created;
     } else {
-      let imgPath = 'files/support/' + chat_id + '/default.jpg';
+      let imgPath = chat_id + '/default.jpg';
       writeFileSync(
-        join(process.cwd(), 'files/support/' + chat_id, 'default.jpg'),
+        join(process.cwd(), 'files/' + chat_id, 'default.jpg'),
         readFileSync('src/telegram-bot/hendlers/img/default.jpg'),
       );
       let created = await this.prisma.users.create({
