@@ -23,6 +23,7 @@ import { TicketHelper } from 'src/message-hendler/ticket-notification';
 import { ConfigService } from '@nestjs/config';
 import { MyHttpService } from 'src/http/http.service';
 import { botSendMesssage } from './botsender';
+import { Helper } from 'src/helper/helper';
 
 @Injectable()
 export class MessageTextHandler {
@@ -103,11 +104,11 @@ export class MessageTextHandler {
         };
         if (reply_message_id) payload.reply_message_id = reply_message_id;
         this.createMessage(payload, chat_id.toString(), msg.message_id);
-        await botSendMesssage('sendMessage', {
-          chat_id: '-1002461316093',
-          text: `Foydalanuvchi chatga yozdi: ${user.phone_number}\n\n<i>${text}</i>`,
-          parse_mode: 'HTML',
-        });
+        // await botSendMesssage('sendMessage', {
+        //   chat_id: '-1002461316093',
+        //   text: `Foydalanuvchi chatga yozdi: ${user.phone_number}\n\n<i>${text}</i>`,
+        //   parse_mode: 'HTML',
+        // });
         return bot.sendMessage(chat_id, success_txt[user?.lang || 'uz']);
       }
     } else if (action?.step == 'operator') {
@@ -271,7 +272,7 @@ export class MessageTextHandler {
       chat_id: createdMessage.user.chat_id,
       name: createdMessage.user.name,
       last_message: newMessage,
-      date: createdMessage.user.updated_at.toLocaleString(),
+      date: Helper.formatByMonthName(createdMessage.user.updated_at, 'ru'),
       phone: createdMessage.user.phone_number,
       is_block: createdMessage.user.is_block,
       is_online: createdMessage.user.is_online,
