@@ -167,7 +167,7 @@ export class MessageTextHandler {
         },
       });
 
-      console.log(created);
+      console.log(created, 'man keldim');
 
       return created;
     } else {
