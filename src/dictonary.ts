@@ -88,7 +88,7 @@ export const conternt_types = {
   reply_photo: { uz: 'Rasm', ru: 'Картина', en: 'Picture' },
   reply_video: { uz: 'video', ru: 'видео', en: 'video' },
   reply_voice: { uz: 'ovozli xabar', ru: 'голосовое сообщение', en: 'voice message' },
-  telegram_video: { uz: 'video', ru: 'видео', en: 'voice message' },
+  telegram_video: { uz: 'video', ru: 'видео', en: 'video' },
 };
 
 export const status_dictonary = {
