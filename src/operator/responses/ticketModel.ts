@@ -48,6 +48,9 @@ export class TicketModel {
 
   @ApiProperty({ type: Number })
   ticket_id?: number;
+
+  @ApiProperty({ type: String })
+  user_image?: string;
 }
 
 export class CloseTicketResponse {

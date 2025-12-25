@@ -161,8 +161,19 @@ export class OperatorService {
           select: {
             id: true,
             categories: true,
-            user: { select: { id: true, name: true, is_online: true } },
-            messages: { orderBy: { created_at: 'desc' } },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                is_online: true,
+                photo: true,
+              },
+            },
+            messages: {
+              orderBy: {
+                created_at: 'desc',
+              },
+            },
             updated_at: true,
             status: true,
             request_close: true,
@@ -269,6 +280,7 @@ export class OperatorService {
         id: ticket.id,
         subject: ticket.categories.name[lang],
         user_name: ticket.user.name,
+        user_image: ticket.user.photo,
         color: ticket.categories.color,
         last_message:
           ticket.messages[0]?.content_type != ContentType.TEXT

@@ -53,7 +53,7 @@ export class TelegramBotService {
         where: { chat_id: chat_id.toString() },
       });
 
-      if (!user) return;
+      // if (!user) return;
       let action: actionModel = Object(user?.action);
       action.step = 'ticket';
       let updateUser = await this.prisma.users.update({
