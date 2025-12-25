@@ -131,12 +131,16 @@ export class MessageTextHandler {
     let chat_id = msg.from.id;
     let firs_name = msg.from.first_name;
 
+    console.log(chat_id, firs_name);
+
     if (!existsSync('files/' + chat_id)) {
       mkdirSync('files/' + chat_id, { recursive: true });
     }
 
     let img = await bot.getUserProfilePhotos(chat_id, { limit: 1 });
     let file_id = img.photos.length ? img.photos[0][img.photos[0].length - 1]?.file_id : false;
+
+    console.log(file_id, img);
 
     if (file_id) {
       let file_link = await bot.getFileLink(file_id);
@@ -181,6 +185,8 @@ export class MessageTextHandler {
           action: { is_telegram_user: true },
         },
       });
+      console.log(created);
+
       return created;
     }
   }
