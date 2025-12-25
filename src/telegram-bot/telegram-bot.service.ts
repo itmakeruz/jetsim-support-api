@@ -45,6 +45,7 @@ export class TelegramBotService {
     });
 
     bot.on('contact', async (msg) => {
+      // return;
       const phone_number = msg.contact.phone_number.replace('+', '');
       const chat_id = msg.from.id;
 
@@ -52,11 +53,17 @@ export class TelegramBotService {
         where: { chat_id: chat_id.toString() },
       });
 
+      if (!user) return;
       let action: actionModel = Object(user?.action);
       action.step = 'ticket';
       let updateUser = await this.prisma.users.update({
-        where: { chat_id: chat_id.toString() },
-        data: { phone_number: phone_number, action: Object(action) },
+        where: {
+          chat_id: chat_id.toString(),
+        },
+        data: {
+          phone_number: phone_number,
+          action: Object(action),
+        },
       });
 
       bot.sendMessage(chat_id, tickets_txt[updateUser.lang], {
