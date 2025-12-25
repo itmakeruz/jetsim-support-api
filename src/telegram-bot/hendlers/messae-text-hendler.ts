@@ -151,6 +151,7 @@ export class MessageTextHandler {
         link: file_link,
       };
       let response = await saveFileLocal(file_link, payload);
+      console.log(response);
 
       // let payload = {
       //   filename: `${random_id}`,
