@@ -533,6 +533,8 @@ export class AppService {
       link: path,
     };
 
+    console.log(payload);
+
     await saveFileLocal(path, payload);
 
     let newMessage: Message | any = {
@@ -593,6 +595,8 @@ export class AppService {
     await this.prisma.tickets.update({ where: { id: Number(ticket_id) }, data: { updated_at: new Date() } });
 
     if (Object(createdMessage.user.action)?.is_telegram_user) {
+      console.log(file);
+
       let response = await botSendFile(
         botEvent,
         { chat_id: createdMessage.user.chat_id, reply_to_message_id: sendmessage.reply_bot_message_id },
