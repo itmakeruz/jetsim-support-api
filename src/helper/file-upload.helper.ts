@@ -7,10 +7,10 @@ export async function saveFileLocal(fileUrl: string, payload: any) {
 
   const fullUrl = fileUrl.startsWith('http') ? fileUrl : BASE_URL + fileUrl;
   // Faylni yuklab olish
-  const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+  const response = await axios.get(fullUrl, { responseType: 'arraybuffer' });
 
   // Fayl extension aniqlash
-  let ext = path.extname(fileUrl);
+  let ext = path.extname(fullUrl);
   if (!ext) ext = '.bin'; // extension topilmasa .bin qilib qo'yamiz
 
   // Papka yo'lini tayyorlash
