@@ -595,7 +595,7 @@ export class AppService {
     await this.prisma.tickets.update({ where: { id: Number(ticket_id) }, data: { updated_at: new Date() } });
 
     if (Object(createdMessage.user.action)?.is_telegram_user) {
-      console.log(file);
+      console.log(file, 'filemannnnn');
 
       let response = await botSendFile(
         botEvent,
