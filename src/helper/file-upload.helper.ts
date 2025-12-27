@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export async function saveFileLocal(fileUrl: string, payload: any) {
+  const BASE_URL = 'https://jetsim.ru';
+
+  const fullUrl = fileUrl.startsWith('http') ? fileUrl : BASE_URL + fileUrl;
   // Faylni yuklab olish
   const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
 
