@@ -83,6 +83,7 @@ export class TelegramBotService {
 
       let photo = msg.photo[msg.photo.length - 1];
       let file_link = await bot.getFileLink(photo.file_id);
+      console.log(file_link);
 
       let date = new Date();
       let random_id = (100000 + Math.random() * 900000) | 0;
