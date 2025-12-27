@@ -416,6 +416,9 @@ export class AppService {
     let filename = random_id + ext_name;
     let is_answer: number;
     let socket_ids: Array<string> = [];
+    if (data.reply_message_id) {
+      data.reply_message_id = Number(data?.reply_message_id);
+    }
 
     let ticket = await this.prisma.tickets.findFirst({
       where: {
