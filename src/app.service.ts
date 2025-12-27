@@ -45,7 +45,7 @@ import { Helper } from './helper/helper';
 import { creteThreads } from './message-hendler/opanai';
 import { MyHttpService } from './http/http.service';
 import FormData from 'form-data';
-import { saveFileLocal } from './helper/file-upload.helper';
+import { saveFileLocal, saveFileLocalFromBuffer } from './helper/file-upload.helper';
 
 @Injectable()
 export class AppService {
@@ -535,7 +535,7 @@ export class AppService {
 
     console.log(payload, 'payload');
 
-    await saveFileLocal(path, payload);
+    await saveFileLocalFromBuffer(file, payload);
 
     let newMessage: Message | any = {
       content: path,

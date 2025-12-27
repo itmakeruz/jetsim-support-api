@@ -2,39 +2,42 @@ import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 
-export async function saveFileLocal(fileOrUrl: any, payload: any) {
+export async function saveFileLocal(fileUrl: string, payload: any) {
+  // Faylni yuklab olish
+  const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+
+  // Fayl extension aniqlash
+  let ext = path.extname(fileUrl);
+  if (!ext) ext = '.bin'; // extension topilmasa .bin qilib qo'yamiz
+
+  // Papka yo'lini tayyorlash
   const folderPath = path.join(process.cwd(), 'files', payload.folder);
   await fs.promises.mkdir(folderPath, { recursive: true });
 
-  let buffer: Buffer;
-  let ext = '.bin';
-
-  // ✅ 1. Agar Express.Multer.File kelsa (WEB / APP)
-  if (fileOrUrl?.buffer instanceof Buffer) {
-    buffer = fileOrUrl.buffer;
-    ext = path.extname(fileOrUrl.originalname) || '.' + fileOrUrl.mimetype.split('/')[1];
-  }
-
-  // ✅ 2. Agar URL kelsa (TELEGRAM)
-  else if (typeof fileOrUrl === 'string') {
-    const BASE_URL = 'https://api.telegram.org';
-    const fullUrl = fileOrUrl.startsWith('http') ? fileOrUrl : BASE_URL + fileOrUrl;
-
-    const response = await axios.get(fullUrl, {
-      responseType: 'arraybuffer',
-    });
-
-    buffer = Buffer.from(response.data);
-    ext = path.extname(fullUrl) || '.bin';
-  }
-
-  // ❌ 3. Noma’lum holat
-  else {
-    throw new Error('Unsupported file input');
-  }
-
+  // Fayl yo'li
   const filePath = path.join(folderPath, payload.filename + ext);
-  await fs.promises.writeFile(filePath, buffer);
 
+  // Diskka yozish
+  await fs.promises.writeFile(filePath, response.data);
+
+  // Nisbiy path qaytarish (DB uchun)
+  return filePath.replace(process.cwd() + '/', '');
+}
+
+export async function saveFileLocalFromBuffer(file: Express.Multer.File, payload: any) {
+  // Fayl extension aniqlash
+  let ext = path.extname(file.originalname) || '.' + file.mimetype.split('/')[1] || '.bin';
+
+  // Papka yo‘lini tayyorlash
+  const folderPath = path.join(process.cwd(), 'files', payload.folder);
+  await fs.promises.mkdir(folderPath, { recursive: true });
+
+  // Fayl yo‘li
+  const filePath = path.join(folderPath, payload.filename + ext);
+
+  // Diskka yozish (BUFFERdan)
+  await fs.promises.writeFile(filePath, file.buffer);
+
+  // Nisbiy path qaytarish (DB uchun)
   return filePath.replace(process.cwd() + '/', '');
 }
