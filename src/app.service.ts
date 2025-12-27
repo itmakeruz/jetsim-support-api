@@ -433,6 +433,8 @@ export class AppService {
     let usersData: UserModel;
     if (!client?.uuid) {
       let operator = await this.prisma.operators.findUnique({ where: { id: client.user_id } });
+      console.log(operator, client?.user_id);
+
       let user = await this.prisma.users.findUnique({
         where: { id: operator.user_id },
         select: {

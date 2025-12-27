@@ -119,8 +119,6 @@ export class renderController {
     if (file?.size > 100000000) {
       throw new BadRequestException(file_size_error[lang]);
     }
-    console.log(user);
-
     return await this.service.upload(file, body, user, lang);
   }
 }
