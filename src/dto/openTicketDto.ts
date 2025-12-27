@@ -19,11 +19,11 @@ export class openTicketDto {
 
 export class SendFileDto {
   @IsOptional()
-  @IsNumberString()
+  @IsNumber()
   reply_message_id?: number;
 
   @IsOptional()
-  @IsNumberString()
+  @IsNumber()
   ticket_id: number;
 }
 
