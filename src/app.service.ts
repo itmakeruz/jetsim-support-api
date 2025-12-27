@@ -538,14 +538,14 @@ export class AppService {
 
     console.log(payload, 'payload');
 
-    await saveFileLocalFromBuffer(file, payload);
+    const relativePath = await saveFileLocalFromBuffer(file, payload);
 
     let newMessage: Message | any = {
-      content: path,
+      content: relativePath,
     };
 
     let sendmessage: Message = {
-      content: path,
+      content: relativePath,
     };
     if (data?.reply_message_id) {
       let message = await this.prisma.messages.findFirst({
