@@ -21,7 +21,7 @@ export class openTicketDto {
 export class SendFileDto {
   @IsOptional()
   @Type(() => Number)
-  @IsNumberString()
+  // @IsNumberString()
   reply_message_id?: number;
 
   @IsOptional()
