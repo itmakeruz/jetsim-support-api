@@ -533,7 +533,7 @@ export class AppService {
       link: path,
     };
 
-    console.log(payload);
+    console.log(payload, 'payload');
 
     await saveFileLocal(path, payload);
 
