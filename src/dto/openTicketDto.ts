@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Prisma } from '@prisma/client';
 import { IsNumber, IsNumberString, IsOptional, IsString } from 'class-validator';
 import { ContentType } from './types';
+import { Type } from 'class-transformer';
 
 export class openTicketDto {
   @IsNumber()
@@ -19,6 +20,7 @@ export class openTicketDto {
 
 export class SendFileDto {
   @IsOptional()
+  @Type(() => Number)
   @IsNumberString()
   reply_message_id?: number;
 
