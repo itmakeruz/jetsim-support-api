@@ -40,6 +40,7 @@ const botSendFile = async (
     form.append(type, files.buffer, { filename: files.originalname });
     // form.append( type, files.buffer, files.filename);
     const headers = form.getHeaders();
+    console.log(`https://api.telegram.org/bot${configDotenv().parsed.TELEGRAM_BOT_TOKEN}/${event}`);
 
     let response = await axios({
       method: 'POST',
