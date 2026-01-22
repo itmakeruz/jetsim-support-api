@@ -64,6 +64,8 @@ export class Helper {
 
     const currentDate = new Date();
     const inputDate = new Date(date);
+    // Add 5 hours for time display only
+    const inputDateWithTimeOffset = new Date(inputDate.getTime() + 5 * 60 * 60 * 1000);
 
     let dateString = '';
     const timeDiff = currentDate.getTime() - inputDate.getTime();
@@ -71,24 +73,30 @@ export class Helper {
 
     if (currentDate.getDate() === inputDate.getDate() && currentDate.getMonth() === inputDate.getMonth()) {
       if (lang == 'en') {
-        dateString = today[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString =
+          today[lang] +
+          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       } else {
-        dateString = today[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString =
+          today[lang] +
+          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       }
     } else if (currentDate.getDate() - inputDate.getDate() === 1 && currentDate.getMonth() === inputDate.getMonth()) {
       dateString = yesterday[lang];
       if (lang == 'en') {
         dateString =
-          yesterday[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+          yesterday[lang] +
+          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       } else {
         dateString =
-          yesterday[lang] + ` ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+          yesterday[lang] +
+          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       }
     } else if (dayDiff > 1 && inputDate.getFullYear() === currentDate.getFullYear()) {
       if (lang == 'en') {
-        dateString = `${monthNames[lang][inputDate.getMonth()]} ${inputDate.getDate()} ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = `${monthNames[lang][inputDate.getMonth()]} ${inputDate.getDate()} ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       } else {
-        dateString = `${inputDate.getDate()} ${monthNames[lang][inputDate.getMonth()]} ${inputDate.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = `${inputDate.getDate()} ${monthNames[lang][inputDate.getMonth()]} ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
       }
     } else if (currentDate.getFullYear() - inputDate.getFullYear() >= 1) {
       if (lang == 'en') {
