@@ -129,7 +129,7 @@ export class ClientMessageHendler {
     let responseData: SendMessageResponse = {
       id: createdMessage.id,
       message: sendmessage,
-      formatted_time: createdMessage.created_at.toLocaleTimeString(),
+      formatted_time: new Date(createdMessage.created_at.getTime() + 5 * 60 * 60 * 1000).toLocaleTimeString(),
       date: createdMessage.created_at,
       base_url: this.config.get('FILES_BASE_URL'),
       is_answer: createdMessage.is_answer,
@@ -235,7 +235,7 @@ export class ClientMessageHendler {
     let responseData: SendMessageResponse = {
       id: createdMessage.id,
       message: sendmessage,
-      formatted_time: createdMessage.created_at.toLocaleTimeString('ru'),
+      formatted_time: new Date(createdMessage.created_at.getTime() + 5 * 60 * 60 * 1000).toLocaleTimeString('ru'),
       date: createdMessage.created_at,
       base_url: this.config.get('FILES_BASE_URL'),
       is_answer: createdMessage.is_answer,

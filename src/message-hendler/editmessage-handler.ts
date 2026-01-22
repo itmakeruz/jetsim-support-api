@@ -64,7 +64,7 @@ export class EditMessage {
     let responseData: SendMessageResponse = {
       id: findMessage.id,
       message: Object(findMessage.message),
-      formatted_time: findMessage.created_at.toLocaleTimeString(),
+      formatted_time: new Date(findMessage.created_at.getTime() + 5 * 60 * 60 * 1000).toLocaleTimeString(),
       date: findMessage.created_at,
       base_url: this.config.get('FILES_BASE_URL'),
       is_answer: findMessage.is_answer,
