@@ -49,7 +49,7 @@ export class TicketHelper {
             last_request_user:
               ticket.messages[0].is_answer === 0 ? ticket.user.name : ticket?.operator?.first_name || '',
             push: ticket.messages.filter((msg) => msg.is_answer === 0 && msg.is_ready === false).length,
-            formatted_date: Helper.formatByMonthName(ticket.updated_at, operator.lang),
+            formatted_date: Helper.formatByMonthName(ticket.messages[0]?.created_at ?? ticket.updated_at, operator.lang),
             status: ticket.status,
             request_close: ticket.request_close,
             is_online: ticket.user.is_online,

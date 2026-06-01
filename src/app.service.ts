@@ -133,15 +133,16 @@ export class AppService {
           where: {
             deleted: false,
           },
-          orderBy: { updated_at: 'desc' },
           select: {
             id: true,
+            created_at: true,
             categories: true,
             updated_at: true,
             status: true,
             request_close: true,
             messages: {
               orderBy: { created_at: 'desc' },
+              take: 1,
             },
           },
         },
@@ -157,14 +158,19 @@ export class AppService {
         tickets: [],
       };
 
-    client.tickets.forEach((ticket) => {
+    const sortedTickets = [...client.tickets].sort(
+      (a, b) => this.getLatestTicketActivityDate(b).getTime() - this.getLatestTicketActivityDate(a).getTime(),
+    );
+
+    sortedTickets.forEach((ticket) => {
+      const latestActivityDate = this.getLatestTicketActivityDate(ticket);
       let last_message: string = !['text', 'reply_text'].includes(ticket.messages[0].content_type)
         ? conternt_types[ticket.messages[0].content_type][lang]
         : Object(ticket.messages[0].message).content || '';
       result.push({
         id: ticket.id,
         categoty_name: ticket.categories.name[lang],
-        formatted_date: Helper.formatByMonthName(ticket.updated_at, lang),
+        formatted_date: Helper.formatByMonthName(latestActivityDate, lang),
         last_message: last_message,
         status: ticket.status,
         request_close: ticket.request_close,
@@ -639,5 +645,9 @@ export class AppService {
     photo: string;
   } | null> {
     return { firstname: '', lastname: '', phone: '', photo: '', surname: '' };
+  }
+
+  private getLatestTicketActivityDate(ticket: { created_at?: Date; updated_at?: Date; messages?: Array<{ created_at?: Date }> }) {
+    return ticket.messages?.[0]?.created_at ?? ticket.created_at ?? ticket.updated_at ?? new Date(0);
   }
 }

@@ -155,11 +155,13 @@ export class OperatorService {
     let page = Number(query.page) || 1;
     let size = Number(query.size) || 1000;
     let totalElements = 0;
+    let dayFilter: number | null = null;
     if (!query) {
       let [tickets, count] = await Promise.all([
         this.prisma.tickets.findMany({
           select: {
             id: true,
+            created_at: true,
             categories: true,
             user: {
               select: {
@@ -180,9 +182,6 @@ export class OperatorService {
             operator: true,
             last_request_user: true,
           },
-          orderBy: { updated_at: 'desc' },
-          skip: page == 1 ? +page - 1 : (+page - 1) * +size,
-          take: +size,
         }),
         this.prisma.tickets.count(),
       ]);
@@ -213,9 +212,7 @@ export class OperatorService {
       if (c_ids?.length) filter.category_id = { in: c_ids };
 
       if (day) {
-        let from_date = new Date(new Date().getTime() - Number(day) * 24 * 60 * 60 * 1000);
-        let to_date = new Date();
-        filter.updated_at = { lte: to_date, gte: from_date };
+        dayFilter = Number(day);
       }
 
       let operator_config = await this.prisma.operators_config.findUnique({
@@ -247,6 +244,7 @@ export class OperatorService {
           where: { AND: filter },
           select: {
             id: true,
+            created_at: true,
             categories: true,
             user: { select: { id: true, name: true, is_online: true, photo: true } },
             messages: { orderBy: { created_at: 'desc' } },
@@ -256,12 +254,8 @@ export class OperatorService {
             operator: true,
             last_request_user: true,
           },
-          orderBy: { updated_at: 'desc' },
-          skip: page == 1 ? +page - 1 : (+page - 1) * +size,
-          take: +size,
         }),
       ]);
-      totalElements = count;
       if (searchMessages.length) {
         tickets = tickets.filter((ticket) => {
           searchMessages.forEach((msg) => {
@@ -272,10 +266,19 @@ export class OperatorService {
           });
         });
       } else queryTickets = tickets;
+      if (dayFilter) {
+        queryTickets = queryTickets.filter((ticket) => this.isTicketWithinDays(ticket, dayFilter));
+      }
+      totalElements = queryTickets.length;
     }
+
+    queryTickets = this.sortTicketsByLatestMessageDate(queryTickets);
+    totalElements = queryTickets.length;
+    queryTickets = queryTickets.slice(page == 1 ? page - 1 : (page - 1) * size, (page == 1 ? page - 1 : (page - 1) * size) + size);
 
     let ticketData: Array<TicketModel> = [];
     queryTickets.forEach((ticket) => {
+      const latestMessageDate = this.getLatestTicketActivityDate(ticket);
       ticketData.push({
         id: ticket.id,
         subject: ticket.categories.name[lang],
@@ -296,7 +299,7 @@ export class OperatorService {
         user_id: ticket.user.id,
         last_request_user: ticket.messages[0]?.is_answer === 0 ? ticket.user.name : ticket?.operator?.firs_name || '',
         push: ticket.messages.filter((message) => message.is_ready === false && message.is_answer === 0).length,
-        formatted_date: Helper.formatByMonthName(ticket.updated_at, lang),
+        formatted_date: Helper.formatByMonthName(latestMessageDate, lang),
         status: ticket.status,
         request_close: ticket.request_close,
         is_online: ticket.user.is_online,
@@ -425,7 +428,10 @@ export class OperatorService {
         color: oneData.tickets.categories.color,
         last_message: last_message,
         push: oneData.tickets.messages.filter((message) => message.is_ready === false && message.is_answer == 0).length,
-        formatted_date: Helper.formatByMonthName(oneData.tickets.updated_at, lang),
+        formatted_date: Helper.formatByMonthName(
+          oneData.tickets.messages[0]?.created_at ?? oneData.tickets.updated_at,
+          lang,
+        ),
         last_request_user: '',
         status: oneData.tickets.status,
         request_close: oneData.tickets.request_close,
@@ -778,5 +784,27 @@ export class OperatorService {
       (c) => c.prefix.substring(0, c.prefix.length) === card.substring(0, c.prefix.length),
     );
     return cardInfo?.icon || 'default.svg';
+  }
+
+  private getLatestTicketActivityDate(ticket: { created_at?: Date; updated_at?: Date; messages?: Array<{ created_at?: Date }> }) {
+    return ticket.messages?.[0]?.created_at ?? ticket.created_at ?? ticket.updated_at ?? new Date(0);
+  }
+
+  private sortTicketsByLatestMessageDate<T extends { created_at?: Date; updated_at?: Date; messages?: Array<{ created_at?: Date }> }>(
+    tickets: T[],
+  ) {
+    return [...tickets].sort(
+      (a, b) => this.getLatestTicketActivityDate(b).getTime() - this.getLatestTicketActivityDate(a).getTime(),
+    );
+  }
+
+  private isTicketWithinDays(
+    ticket: { created_at?: Date; updated_at?: Date; messages?: Array<{ created_at?: Date }> },
+    days: number,
+  ) {
+    const fromDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const latestActivityDate = this.getLatestTicketActivityDate(ticket);
+
+    return latestActivityDate >= fromDate && latestActivityDate <= new Date();
   }
 }
