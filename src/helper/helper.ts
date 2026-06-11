@@ -16,6 +16,54 @@ import * as path from 'path';
 
 // let detectLanguage = new Client(dotenv.config().parsed.DETECT_LANGUAGE_KEY)
 export class Helper {
+  private static getDisplayTimeZone(): string {
+    return process.env.APP_TIME_ZONE || 'Asia/Tashkent';
+  }
+
+  static formatMessageTime(date: Date, locale = 'ru-RU'): string {
+    return new Intl.DateTimeFormat(locale, {
+      timeZone: Helper.getDisplayTimeZone(),
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(new Date(date));
+  }
+
+  private static formatShortTime(date: Date): string {
+    return new Intl.DateTimeFormat('uz-UZ', {
+      timeZone: Helper.getDisplayTimeZone(),
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(new Date(date));
+  }
+
+  private static getDisplayDateParts(date: Date): { year: number; month: number; day: number } {
+    const values: Record<string, string> = {};
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: Helper.getDisplayTimeZone(),
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    }).formatToParts(new Date(date));
+
+    for (const part of parts) {
+      if (part.type !== 'literal') values[part.type] = part.value;
+    }
+
+    return {
+      year: Number(values.year),
+      month: Number(values.month),
+      day: Number(values.day),
+    };
+  }
+
+  private static getDisplayDayNumber(date: Date): number {
+    const parts = Helper.getDisplayDateParts(date);
+    return Math.floor(Date.UTC(parts.year, parts.month - 1, parts.day) / (1000 * 60 * 60 * 24));
+  }
+
   static formatByMonthName(date: Date, lang: string): string {
     const monthNames = {
       ru: [
@@ -64,45 +112,37 @@ export class Helper {
 
     const currentDate = new Date();
     const inputDate = new Date(date);
-    // Add 5 hours for time display only
-    const inputDateWithTimeOffset = new Date(inputDate.getTime() + 5 * 60 * 60 * 1000);
+    const inputTime = Helper.formatShortTime(inputDate);
+    const currentDateParts = Helper.getDisplayDateParts(currentDate);
+    const inputDateParts = Helper.getDisplayDateParts(inputDate);
 
     let dateString = '';
-    const timeDiff = currentDate.getTime() - inputDate.getTime();
-    const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24)); // kunga o'tkazadi
+    const dayDiff = Helper.getDisplayDayNumber(currentDate) - Helper.getDisplayDayNumber(inputDate);
 
-    if (currentDate.getDate() === inputDate.getDate() && currentDate.getMonth() === inputDate.getMonth()) {
+    if (dayDiff === 0) {
       if (lang == 'en') {
-        dateString =
-          today[lang] +
-          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = today[lang] + ` ${inputTime}`;
       } else {
-        dateString =
-          today[lang] +
-          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = today[lang] + ` ${inputTime}`;
       }
-    } else if (currentDate.getDate() - inputDate.getDate() === 1 && currentDate.getMonth() === inputDate.getMonth()) {
+    } else if (dayDiff === 1) {
       dateString = yesterday[lang];
       if (lang == 'en') {
-        dateString =
-          yesterday[lang] +
-          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = yesterday[lang] + ` ${inputTime}`;
       } else {
-        dateString =
-          yesterday[lang] +
-          ` ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = yesterday[lang] + ` ${inputTime}`;
       }
-    } else if (dayDiff > 1 && inputDate.getFullYear() === currentDate.getFullYear()) {
+    } else if (dayDiff > 1 && inputDateParts.year === currentDateParts.year) {
       if (lang == 'en') {
-        dateString = `${monthNames[lang][inputDate.getMonth()]} ${inputDate.getDate()} ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = `${monthNames[lang][inputDateParts.month - 1]} ${inputDateParts.day} ${inputTime}`;
       } else {
-        dateString = `${inputDate.getDate()} ${monthNames[lang][inputDate.getMonth()]} ${inputDateWithTimeOffset.toLocaleTimeString('uz-UZ', { minute: '2-digit', hour: '2-digit' })}`;
+        dateString = `${inputDateParts.day} ${monthNames[lang][inputDateParts.month - 1]} ${inputTime}`;
       }
-    } else if (currentDate.getFullYear() - inputDate.getFullYear() >= 1) {
+    } else if (currentDateParts.year - inputDateParts.year >= 1) {
       if (lang == 'en') {
-        dateString = `${monthNames[lang][inputDate.getMonth()]} ${inputDate.getDate()} ${inputDate.getFullYear()}`;
+        dateString = `${monthNames[lang][inputDateParts.month - 1]} ${inputDateParts.day} ${inputDateParts.year}`;
       } else {
-        dateString = `${inputDate.getDate()} ${monthNames[lang][inputDate.getMonth()]} ${inputDate.getFullYear()}`;
+        dateString = `${inputDateParts.day} ${monthNames[lang][inputDateParts.month - 1]} ${inputDateParts.year}`;
       }
     }
 

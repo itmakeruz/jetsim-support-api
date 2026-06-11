@@ -388,7 +388,7 @@ export class OperatorService {
       chatData.push({
         id: message.id,
         is_answer: message.is_answer,
-        formatted_time: new Date(message.created_at.getTime() + 5 * 60 * 60 * 1000).toLocaleTimeString('ru'),
+        formatted_time: Helper.formatMessageTime(message.created_at),
         date: message.created_at,
         base_url: this.config.get('FILES_BASE_URL'),
         author: message.is_answer == 0 ? message.user.name : message?.operator?.first_name,

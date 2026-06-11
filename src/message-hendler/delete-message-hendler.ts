@@ -8,6 +8,7 @@ import { _user_blocked, user_blocked } from 'src/dictonary';
 import { EmitTypes } from 'src/dto/types';
 import { SendMessageResponse } from './emitsmodel/sendmessage-response';
 import { ConfigService } from '@nestjs/config';
+import { Helper } from 'src/helper/helper';
 
 @Injectable()
 export class DeleteMessage {
@@ -65,7 +66,7 @@ export class DeleteMessage {
     let responseData: SendMessageResponse = {
       id: findMessage.id,
       message: Object(findMessage.message),
-      formatted_time: new Date(findMessage.created_at.getTime() + 5 * 60 * 60 * 1000).toLocaleTimeString(),
+      formatted_time: Helper.formatMessageTime(findMessage.created_at),
       date: findMessage.created_at,
       base_url: this.config.get('FILES_BASE_URL'),
       is_answer: findMessage.is_answer,
