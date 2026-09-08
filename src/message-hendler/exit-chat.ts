@@ -31,5 +31,6 @@ export class ExitChat {
     });
 
     server.to(client.id).emit(EmitTypes.EXITCHAT, { success: true });
+    return { ok: true };
   }
 }

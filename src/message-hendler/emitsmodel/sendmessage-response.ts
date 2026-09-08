@@ -4,6 +4,9 @@ import { Message } from 'src/dto/openTicketDto';
 
 export class SendMessageResponse {
   @ApiProperty({ type: Number })
+  ticket_id: number;
+
+  @ApiProperty({ type: Number })
   id: number;
 
   @ApiProperty({ type: Message })

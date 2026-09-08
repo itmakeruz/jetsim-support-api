@@ -144,6 +144,20 @@ export class Helper {
       } else {
         dateString = `${inputDateParts.day} ${monthNames[lang][inputDateParts.month - 1]} ${inputDateParts.year}`;
       }
+    } else {
+      // A clock skew or a legacy timestamp must never make the chat-list date disappear.
+      // Show the actual local date instead of returning an empty string for a future day.
+      if (inputDateParts.year === currentDateParts.year) {
+        dateString =
+          lang == 'en'
+            ? `${monthNames[lang][inputDateParts.month - 1]} ${inputDateParts.day} ${inputTime}`
+            : `${inputDateParts.day} ${monthNames[lang][inputDateParts.month - 1]} ${inputTime}`;
+      } else {
+        dateString =
+          lang == 'en'
+            ? `${monthNames[lang][inputDateParts.month - 1]} ${inputDateParts.day} ${inputDateParts.year}`
+            : `${inputDateParts.day} ${monthNames[lang][inputDateParts.month - 1]} ${inputDateParts.year}`;
+      }
     }
 
     return dateString;

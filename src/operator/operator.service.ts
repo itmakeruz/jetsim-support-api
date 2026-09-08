@@ -60,15 +60,14 @@ export class OperatorService {
 
   async getUsers(data: UserQueryDto, user: OperatorRequest, lang): Promise<UsersResponse> {
     const { page, size, search } = data;
-    let usersCount = await this.prisma.users.count();
+    const usersWhere = {
+      NOT: { tickets: { none: {} } },
+      ...(search ? { name: { contains: search, mode: 'insensitive' as const } } : {}),
+    };
+    let usersCount = await this.prisma.users.count({ where: usersWhere });
 
     let users = await this.prisma.users.findMany({
-      where: {
-        AND: {
-          NOT: { tickets: { none: {} } },
-          name: { contains: search, mode: 'insensitive' },
-        },
-      },
+      where: usersWhere,
       select: {
         id: true,
         chat_id: true,
@@ -77,7 +76,7 @@ export class OperatorService {
         phone_number: true,
         is_online: true,
         updated_at: true,
-        messages: { orderBy: { created_at: 'desc' } },
+        messages: { orderBy: { created_at: 'desc' }, take: 1 },
       },
       orderBy: { updated_at: 'desc' },
       skip: page == '1' ? +page - 1 : (+page - 1) * +size,
@@ -98,7 +97,7 @@ export class OperatorService {
         phone_number: true,
         is_online: true,
         updated_at: true,
-        messages: { orderBy: { created_at: 'desc' } },
+        messages: { orderBy: { created_at: 'desc' }, take: 1 },
       },
       orderBy: { updated_at: 'desc' },
     });
@@ -109,10 +108,10 @@ export class OperatorService {
         id: item.id,
         chat_id: item.chat_id,
         name: item.name,
-        date: Helper.formatByMonthName(item.updated_at, lang),
+        date: Helper.formatByMonthName(item.messages[0]?.created_at ?? item.updated_at, lang),
         last_message:
-          item.messages[0].content_type != ContentType.TEXT
-            ? { content: item.messages[0].content_type }
+          item.messages[0]?.content_type != ContentType.TEXT
+            ? { content: item.messages[0]?.content_type || '' }
             : item.messages[0]?.message || { content: '' },
         phone: '',
         is_block: false,
@@ -128,12 +127,12 @@ export class OperatorService {
         chat_id: user.chat_id,
         name: user.name,
         is_block: user.is_block,
-        date: Helper.formatByMonthName(user.updated_at, lang),
+        date: Helper.formatByMonthName(user.messages[0]?.created_at ?? user.updated_at, lang),
         phone: user.phone_number,
         is_online: user.is_online,
         last_message:
-          user.messages[0].content_type != ContentType.TEXT
-            ? { content: user.messages[0].content_type }
+          user.messages[0]?.content_type != ContentType.TEXT
+            ? { content: user.messages[0]?.content_type || '' }
             : user.messages[0]?.message || { content: '' },
         push: user.messages.filter((msg) => msg.is_answer === 0 && msg.is_ready === false).length,
       });
@@ -202,7 +201,7 @@ export class OperatorService {
       let day = query.day;
 
       let filter: FilterType = { deleted: false };
-      if (ids?.length) filter = { user_id: { in: ids } };
+      if (ids?.length) filter.user_id = { in: ids };
       if (statuses?.length) filter.status = { in: statuses };
       if (statuses?.includes(StatusTypes.MYTICKET)) {
         statuses.splice(statuses.indexOf(StatusTypes.MYTICKET), 1);
@@ -232,16 +231,27 @@ export class OperatorService {
           },
         });
       }
-      let searchMessages = [];
-      if (query.search) {
-        searchMessages = await this.prisma.$queryRawUnsafe<Messages[]>(
-          `select * from messages where content_type = 'text' and message->>'content' ilike '%${query.search}%'`,
-        );
-      }
+      const search = query.search?.trim();
+      const searchFilter = search
+        ? {
+            OR: [
+              { user: { name: { contains: search, mode: 'insensitive' as const } } },
+              {
+                messages: {
+                  some: {
+                    deleted: false,
+                    content_type: { in: [ContentType.TEXT, ContentType.REPLYTEXT] },
+                    message: { path: ['content'], string_contains: search },
+                  },
+                },
+              },
+            ],
+          }
+        : undefined;
       let [count, tickets] = await Promise.all([
-        this.prisma.tickets.count({ where: { AND: filter } }),
+        this.prisma.tickets.count({ where: { AND: [filter, ...(searchFilter ? [searchFilter] : [])] } }),
         this.prisma.tickets.findMany({
-          where: { AND: filter },
+          where: { AND: [filter, ...(searchFilter ? [searchFilter] : [])] },
           select: {
             id: true,
             created_at: true,
@@ -256,16 +266,7 @@ export class OperatorService {
           },
         }),
       ]);
-      if (searchMessages.length) {
-        tickets = tickets.filter((ticket) => {
-          searchMessages.forEach((msg) => {
-            if (ticket.id === msg.ticket_id && !queryTickets.includes(ticket)) {
-              ticket.messages = [msg];
-              queryTickets.push(ticket);
-            }
-          });
-        });
-      } else queryTickets = tickets;
+      queryTickets = tickets;
       if (dayFilter) {
         queryTickets = queryTickets.filter((ticket) => this.isTicketWithinDays(ticket, dayFilter));
       }
@@ -297,7 +298,7 @@ export class OperatorService {
                 message_id: ticket.messages[0]?.id,
               },
         user_id: ticket.user.id,
-        last_request_user: ticket.messages[0]?.is_answer === 0 ? ticket.user.name : ticket?.operator?.firs_name || '',
+        last_request_user: ticket.messages[0]?.is_answer === 0 ? ticket.user.name : ticket?.operator?.first_name || '',
         push: ticket.messages.filter((message) => message.is_ready === false && message.is_answer === 0).length,
         formatted_date: Helper.formatByMonthName(latestMessageDate, lang),
         status: ticket.status,
@@ -386,6 +387,7 @@ export class OperatorService {
       }
 
       chatData.push({
+        ticket_id: Number(data.id),
         id: message.id,
         is_answer: message.is_answer,
         formatted_time: Helper.formatMessageTime(message.created_at),
@@ -457,8 +459,8 @@ export class OperatorService {
       push: pushCount,
     };
 
-    this.socket.server.to(operator.socket_id).emit(EmitTypes.UPDATEDUSER, userData);
-    this.socket.server.to(operator.socket_id).emit(EmitTypes.UPDATETICKET, responseData.ticket);
+    this.socket.server.to(`operator:${user.user_id}`).emit(EmitTypes.UPDATEDUSER, userData);
+    this.socket.server.to(`operator:${user.user_id}`).emit(EmitTypes.UPDATETICKET, responseData.ticket);
     return responseData;
   }
 

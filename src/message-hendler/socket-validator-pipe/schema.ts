@@ -11,14 +11,18 @@ export const message_id = z.number().optional();
 export const SendMessageData = z.object({
   message: message,
   ticket_id: ticket_id,
-  replay_message_id: replay_message_id,
+  reply_message_id: replay_message_id,
 });
 
 export const EditMessageData = z.object({
   message: message,
-  message_id: message_id,
+  message_id: message_id.refine((value) => value !== undefined, { message: 'message_id is required' }),
 });
 
 export const DeleteMessageData = z.object({
-  message_id: message_id,
+  message_id: message_id.refine((value) => value !== undefined, { message: 'message_id is required' }),
+});
+
+export const ExitChatData = z.object({
+  ticket_id: ticket_id,
 });

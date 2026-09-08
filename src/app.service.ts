@@ -33,6 +33,7 @@ import {
   defaultMessages,
   file_type_error,
   message_notfound,
+  ticket_notfound,
   ticket_opened_error,
   user_blocked,
 } from './dictonary';
@@ -164,9 +165,10 @@ export class AppService {
 
     sortedTickets.forEach((ticket) => {
       const latestActivityDate = this.getLatestTicketActivityDate(ticket);
-      let last_message: string = !['text', 'reply_text'].includes(ticket.messages[0].content_type)
-        ? conternt_types[ticket.messages[0].content_type][lang]
-        : Object(ticket.messages[0].message).content || '';
+      const latestMessage = ticket.messages[0];
+      let last_message: string = latestMessage && !['text', 'reply_text'].includes(latestMessage.content_type)
+        ? conternt_types[latestMessage.content_type]?.[lang] || ''
+        : Object(latestMessage?.message).content || '';
       result.push({
         id: ticket.id,
         categoty_name: ticket.categories.name[lang],
@@ -185,10 +187,13 @@ export class AppService {
   }
 
   async closeTicket(body: closeTicketDto, user: ClientRequest, lang = 'ru'): Promise<closeTicketResponse> {
+    const client = await this.prisma.users.findUnique({ where: { chat_id: user.uuid } });
+    const ticket = await this.prisma.tickets.findUnique({ where: { id: body.ticket_id } });
+    if (!client || !ticket || ticket.user_id !== client.id) {
+      throw new HttpException('Access denied', 403);
+    }
     await this.prisma.tickets.update({
-      where: {
-        id: body.ticket_id,
-      },
+      where: { id: ticket.id },
       data: {
         status: StatusTypes.CLOSED,
         rate: body.rate,
@@ -236,6 +241,7 @@ export class AppService {
       }
 
       messagesData.push({
+        ticket_id: Number(param.id),
         id: Number(message.id),
         message: sendmessage,
         formatted_time: Helper.formatMessageTime(message.created_at),
@@ -337,7 +343,7 @@ export class AppService {
         chat_id: newuser.chat_id,
         name: newuser.name,
         is_block: newuser.is_block,
-        date: Helper.formatByMonthName(user.messages[0].created_at, lang),
+        date: Helper.formatByMonthName(newuser.updated_at, lang),
         phone: newuser.phone_number,
         is_online: newuser.is_online,
         last_message: newMessage,
@@ -415,165 +421,103 @@ export class AppService {
   }
 
   async upload(file: Express.Multer.File, data: SendFileDto, client, lang): Promise<any> {
-    const { reply_message_id, ticket_id } = data;
-    let date = new Date();
-    let ext_name = extname(file?.originalname);
-    let random_id = (100000 + Math.random() * 900000) | 0;
-    let filename = random_id + ext_name;
-    let is_answer: number;
-    let socket_ids: Array<string> = [];
-    if (data.reply_message_id) {
-      data.reply_message_id = Number(data?.reply_message_id);
-    }
+    if (!file) throw new BadRequestException(file_type_error[lang] || file_type_error.ru);
 
-    let ticket = await this.prisma.tickets.findFirst({
-      where: {
-        id: Number(ticket_id),
+    const ticketId = Number(data.ticket_id);
+    const replyMessageId = data.reply_message_id ? Number(data.reply_message_id) : undefined;
+    const ticket = await this.prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: {
+        id: true,
+        user_id: true,
+        operator_id: true,
+        user: {
+          select: {
+            id: true,
+            chat_id: true,
+            name: true,
+            is_block: true,
+            phone_number: true,
+            is_online: true,
+            action: true,
+          },
+        },
       },
     });
+    if (!ticket) throw new BadRequestException(ticket_notfound[lang] || ticket_notfound.ru);
 
-    if (ticket?.operator_id != null && client?.user_id && ticket?.operator_id != client.user_id) {
-      this.socket.server
-        .to(client.id)
-        .emit(EmitTypes.EXCEOPTION, { status: 403, error: 'Bad Request', message: ticket_opened_error['en'] });
-    }
-
-    let path = `${date.toLocaleDateString().split('.').join('_')}/${date.toLocaleTimeString('ru-RU', { hour: 'numeric' })}/`;
-    let usersData: UserModel;
-    if (!client?.uuid) {
-      let operator = await this.prisma.operators.findUnique({ where: { id: client.user_id } });
-      console.log(operator, client?.user_id);
-
-      let user = await this.prisma.users.findUnique({
-        where: { id: operator.user_id },
-        select: {
-          id: true,
-          chat_id: true,
-          name: true,
-          is_block: true,
-          updated_at: true,
-          phone_number: true,
-          is_online: true,
-          messages: true,
-          socket_id: true,
-        },
+    const isOperator = Boolean(client?.user_id && !client?.uuid);
+    let operatorId: number | null = ticket.operator_id;
+    if (isOperator) {
+      const claimed = await this.prisma.tickets.updateMany({
+        where: { id: ticket.id, OR: [{ operator_id: null }, { operator_id: client.user_id }] },
+        data: { operator_id: client.user_id },
       });
-      is_answer = 1;
-      socket_ids.push(operator.socket_id, user.socket_id);
-      client.uuid = user.chat_id;
-      usersData = {
-        id: user.id,
-        chat_id: user.chat_id,
-        name: user.name,
-        is_block: user.is_block,
-        date: user.updated_at.toLocaleString(),
-        phone: user.phone_number,
-        is_online: user.is_online,
-        last_message: user.messages[0]?.message || { content: '' },
-        push: user.messages.filter((msg) => msg.is_ready === false && msg.is_answer == 0).length,
-      };
+      if (!claimed.count) throw new HttpException(ticket_opened_error[lang] || ticket_opened_error.ru, 403);
+      operatorId = client.user_id;
     } else {
-      let user = await this.prisma.users.findUnique({
-        where: { chat_id: client.uuid },
-        select: {
-          id: true,
-          chat_id: true,
-          name: true,
-          is_block: true,
-          updated_at: true,
-          phone_number: true,
-          is_online: true,
-          messages: true,
-          socket_id: true,
-        },
-      });
-      is_answer = 0;
-      let operator = await this.prisma.operators.findFirst({ where: { user_id: user.id } });
-      socket_ids.push(operator?.socket_id, user?.socket_id);
-      usersData = {
-        id: user.id,
-        chat_id: user.chat_id,
-        name: user.name,
-        is_block: user.is_block,
-        date: user.updated_at.toLocaleString(),
-        phone: user.phone_number,
-        is_online: user.is_online,
-        last_message: user.messages[0]?.message || { content: '' },
-        push: user.messages.filter((msg) => msg.is_ready === false && msg.is_answer == 0).length,
-      };
+      const sender = await this.prisma.users.findUnique({ where: { chat_id: client?.uuid } });
+      if (!sender || sender.id !== ticket.user_id) throw new HttpException('Access denied', 403);
     }
+
+    const date = new Date();
+    const randomId = (100000 + Math.random() * 900000) | 0;
+    const storageOwner = ticket.user.chat_id || String(ticket.user_id);
+    const isAnswer = isOperator ? 1 : 0;
     let contentType: string;
     let botEvent: EventType;
+    let storageType: string;
     if (imageTypes.includes(file.mimetype)) {
-      path = client.uuid + '/images/' + path;
-      contentType = reply_message_id ? ContentType.REPLYPHOTO : ContentType.PHOTO;
+      contentType = replyMessageId ? ContentType.REPLYPHOTO : ContentType.PHOTO;
       botEvent = 'sendPhoto';
+      storageType = 'images';
     } else if (audioTypes.includes(file.mimetype)) {
-      path = client.uuid + '/audios/' + path;
-      contentType = reply_message_id ? ContentType.REPLYVOICE : ContentType.VOICE;
+      contentType = replyMessageId ? ContentType.REPLYVOICE : ContentType.VOICE;
       botEvent = 'sendAudio';
+      storageType = 'audios';
     } else if (videoTypes.includes(file.mimetype)) {
-      path = client.uuid + '/videos/' + path;
-      contentType = reply_message_id ? ContentType.REPLYVIDEO : ContentType.VIDEO;
+      contentType = replyMessageId ? ContentType.REPLYVIDEO : ContentType.VIDEO;
       botEvent = 'sendVideo';
+      storageType = 'videos';
     } else if (documentTypes.includes(file.mimetype)) {
-      path = client.uuid + '/documents/' + path;
-      contentType = reply_message_id ? ContentType.REPLYDOCUMENT : ContentType.DOCUMENT;
+      contentType = replyMessageId ? ContentType.REPLYDOCUMENT : ContentType.DOCUMENT;
       botEvent = 'sendDocument';
+      storageType = 'documents';
     } else {
-      throw new BadRequestException(file_type_error[lang]);
+      throw new BadRequestException(file_type_error[lang] || file_type_error.ru);
     }
 
-    usersData.last_message = { content: contentType };
-
-    path = '/support/' + path + filename;
-
-    let metaData = {
-      'Content-Type': file.mimetype,
-    };
-
-    let payload = {
-      filename: `${random_id}`,
-      folder:
-        'app_images/' +
-        ticket.user_id +
-        '/images/' +
-        `${date.toLocaleDateString().split('.').join('_')}/${date.toLocaleTimeString('ru-RU', { hour: 'numeric' })}`,
-      link: path,
-    };
-
-    console.log(payload, 'payload');
-
-    const relativePath = await saveFileLocalFromBuffer(file, payload);
-
-    let newMessage: Message | any = {
-      content: relativePath,
-    };
-
-    let sendmessage: Message = {
-      content: relativePath,
-    };
-    if (data?.reply_message_id) {
-      let message = await this.prisma.messages.findFirst({
-        where: { id: data.reply_message_id },
-        select: { id: true, message: true, content_type: true, is_answer: true, user: true, operator: true },
+    const relativePath = await saveFileLocalFromBuffer(file, {
+      filename: `${randomId}`,
+      folder: `support/${storageOwner}/${storageType}/${date.toISOString().slice(0, 13).replace(/[:T]/g, '_')}`,
+      link: '',
+    });
+    const newMessage: Message | any = { content: relativePath };
+    const sendMessage: Message = { content: relativePath };
+    if (replyMessageId) {
+      const reply = await this.prisma.messages.findFirst({
+        where: { id: replyMessageId, ticket_id: ticket.id, deleted: false },
+        select: { id: true, message: true, content_type: true, bot_id: true, is_answer: true, user: true, operator: true },
       });
-      if (!message) throw new BadRequestException(message_notfound[lang]);
-      newMessage.reply_message_id = message.id;
-      sendmessage.reply_message_id = data.reply_message_id;
-      sendmessage.reply_content = {
-        content: Object(message.message)?.content,
-        content_type: message.content_type,
-        author: message.is_answer == 0 ? message.user.name : message.operator.first_name,
+      if (!reply) throw new BadRequestException(message_notfound[lang] || message_notfound.ru);
+      newMessage.reply_message_id = reply.id;
+      sendMessage.reply_message_id = reply.id;
+      if (Object(ticket.user.action)?.is_telegram_user && reply.bot_id) {
+        sendMessage.reply_bot_message_id = Number(reply.bot_id);
+      }
+      sendMessage.reply_content = {
+        content: Object(reply.message)?.content,
+        content_type: reply.content_type,
+        author: reply.is_answer === 0 ? reply.user?.name : reply.operator?.first_name,
       };
     }
     let createdMessage = await this.prisma.messages.create({
       data: {
-        user_id: usersData.id,
-        is_answer: is_answer,
-        operator_id: is_answer == 1 ? client.user_id : null,
+        user_id: ticket.user_id,
+        is_answer: isAnswer,
+        operator_id: isAnswer === 1 ? operatorId : null,
         content_type: contentType,
-        ticket_id: Number(data.ticket_id),
+        ticket_id: ticket.id,
         message: newMessage,
       },
       select: {
@@ -587,34 +531,36 @@ export class AppService {
     });
 
     let responseData: SendMessageResponse = {
+      ticket_id: ticket.id,
       id: createdMessage.id,
-      message: sendmessage,
+      message: sendMessage,
       formatted_time: Helper.formatMessageTime(createdMessage.created_at),
       date: createdMessage.created_at,
       is_answer: createdMessage.is_answer,
       base_url: this.config.get('FILES_BASE_URL'),
-      author: (is_answer = 0 ? usersData.name : client.name),
+      author: isAnswer === 1 ? client.name : ticket.user.name,
       content_type: createdMessage.content_type,
       is_ready: createdMessage.is_ready,
     };
     await this.prisma.users.update({
       where: { id: createdMessage.user.id },
-      data: { last_message: contentType, updated_at: new Date() },
+      data: { last_message: contentType },
     });
-    await this.prisma.tickets.update({ where: { id: Number(ticket_id) }, data: { updated_at: new Date() } });
+    await this.prisma.tickets.update({
+      where: { id: ticket.id },
+      data: { status: isAnswer === 1 ? StatusTypes.ANSWERED : StatusTypes.AWAITING },
+    });
 
     if (Object(createdMessage.user.action)?.is_telegram_user) {
-      console.log(file, 'filemannnnn');
-
       let response = await botSendFile(
         botEvent,
-        { chat_id: createdMessage.user.chat_id, reply_to_message_id: sendmessage.reply_bot_message_id },
+        { chat_id: createdMessage.user.chat_id, reply_to_message_id: sendMessage.reply_bot_message_id },
         file,
       );
 
       if (response?.['ok'] === false) {
         newMessage.content = user_blocked[lang];
-        sendmessage.content = user_blocked[lang];
+        sendMessage.content = user_blocked[lang];
         await this.prisma.messages.update({
           where: { id: createdMessage.id },
           data: { message: newMessage, content_type: 'text' },
@@ -624,17 +570,27 @@ export class AppService {
       }
     }
 
-    socket_ids.forEach((id) => {
-      this.socket.server.to(id).emit(EmitTypes.NEWMESSAGE, responseData);
-    });
+    this.socket.server.to(`user:${ticket.user_id}`).emit(EmitTypes.NEWMESSAGE, responseData);
+    if (operatorId) this.socket.server.to(`operator:${operatorId}`).emit(EmitTypes.NEWMESSAGE, responseData);
 
     await this.ticketHelper.notification(this.socket.server, ticket.id);
-    let operators = await this.prisma.operators.findMany({ where: { is_active: true } });
+    let operators = await this.prisma.operators.findMany({ where: { is_active: true }, select: { id: true } });
     operators.map((operator) => {
-      this.socket.server.to(operator.socket_id).emit(EmitTypes.NOTIFICATION, usersData);
+      this.socket.server.to(`operator:${operator.id}`).emit(EmitTypes.NOTIFICATION, {
+        id: ticket.user.id,
+        chat_id: ticket.user.chat_id,
+        name: ticket.user.name,
+        last_message: { content: contentType },
+        date: Helper.formatByMonthName(createdMessage.created_at, lang || 'ru'),
+        phone: ticket.user.phone_number,
+        is_block: ticket.user.is_block,
+        is_online: ticket.user.is_online,
+        push: 0,
+        ticket_id: ticket.id,
+      });
     });
 
-    return { result: StatusTypes.SUCCESS };
+    return { result: StatusTypes.SUCCESS, data: responseData };
   }
 
   async getUserData(uuid: string): Promise<{

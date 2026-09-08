@@ -11,7 +11,7 @@ export class TicketHelper {
   async notification(server?: Server, ticket_id?: number, req_lang?: string) {
     let operators = await this.prisma.operators.findMany({
       where: { is_active: true },
-      select: { config: true, lang: true },
+      select: { id: true, config: true, lang: true },
     });
     for (const operator of operators) {
       let tickets = await this.prisma.tickets.findMany({
@@ -55,7 +55,7 @@ export class TicketHelper {
             is_online: ticket.user.is_online,
             ticket_id: ticket_id,
           };
-          server.to(ticket?.operator?.socket_id).emit(EmitTypes.UPDATETICKET, response);
+          server.to(`operator:${operator.id}`).emit(EmitTypes.UPDATETICKET, response);
         }
       }
     }

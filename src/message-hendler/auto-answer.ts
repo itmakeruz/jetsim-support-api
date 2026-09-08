@@ -117,6 +117,7 @@ export class TasksService implements OnModuleInit {
     });
 
     let responseData: SendMessageResponse = {
+      ticket_id,
       id: createdMessage.id,
       message: sendmessage,
       formatted_time: Helper.formatMessageTime(createdMessage.created_at),

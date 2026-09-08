@@ -35,13 +35,13 @@ const botSendFile = async (
       type = 'video';
     } else if (event == 'sendDocument') {
       type = 'document';
+    } else if (event == 'sendAudio') {
+      type = 'audio';
     }
     let form = new FormData();
     form.append(type, files.buffer, { filename: files.originalname });
     // form.append( type, files.buffer, files.filename);
     const headers = form.getHeaders();
-    console.log(`https://api.telegram.org/bot${configDotenv().parsed.TELEGRAM_BOT_TOKEN}/${event}`);
-
     let response = await axios({
       method: 'POST',
       url: `https://api.telegram.org/bot${configDotenv().parsed.TELEGRAM_BOT_TOKEN}/${event}`,

@@ -74,7 +74,7 @@ export const videoTypes: Array<string> = [MimeTypes.mp4, MimeTypes.mpeg, MimeTyp
 
 export const audioTypes: Array<string> = [MimeTypes.audioOgg, MimeTypes.audiompeg, MimeTypes.aac];
 
-export const documentTypes: Array<string> = [MimeTypes.docx, MimeTypes.xlsx, MimeTypes.xls, MimeTypes.doc];
+export const documentTypes: Array<string> = [MimeTypes.pdf, MimeTypes.docx, MimeTypes.xlsx, MimeTypes.xls, MimeTypes.doc];
 
 export const status_types: Array<string> = [
   StatusTypes.ACTIVE,
