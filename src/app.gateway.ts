@@ -8,7 +8,7 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable, UseGuards, UsePipes } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { OperatorMessageHendler } from './message-hendler/operator-message-handler';
@@ -96,33 +96,28 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @UsePipes(new ZodValidationPipe(SendMessageData))
   @SubscribeMessage(EmitTypes.SENDMESSAGE)
-  async sendMessage(@MessageBody() body: sendMessageDto, @ConnectedSocket() client: Socket) {
+  async sendMessage(@MessageBody(new ZodValidationPipe(SendMessageData)) body: sendMessageDto, @ConnectedSocket() client: Socket) {
     return await this.operatorService.sendMessage(body, client, this.server);
   }
 
-  @UsePipes(new ZodValidationPipe(SendMessageData))
   @SubscribeMessage(EmitTypes.APPNEWMESSAGE)
-  async appSendMessage(@MessageBody() body: sendMessageDto, @ConnectedSocket() client: Socket) {
+  async appSendMessage(@MessageBody(new ZodValidationPipe(SendMessageData)) body: sendMessageDto, @ConnectedSocket() client: Socket) {
     return await this.clientService.sendMessage(body, client, this.server);
   }
 
-  @UsePipes(new ZodValidationPipe(EditMessageData))
   @SubscribeMessage(EmitTypes.EDITMESSAGE)
-  async editMessage(@MessageBody() body: editMessageDto, @ConnectedSocket() client: Socket) {
+  async editMessage(@MessageBody(new ZodValidationPipe(EditMessageData)) body: editMessageDto, @ConnectedSocket() client: Socket) {
     return await this.editmessage.editMessage(body, client, this.server);
   }
 
-  @UsePipes(new ZodValidationPipe(DeleteMessageData))
   @SubscribeMessage(EmitTypes.DELETEMESSAGE)
-  async deleteMessage(@MessageBody() body: deleteMessageDto, @ConnectedSocket() client: Socket) {
+  async deleteMessage(@MessageBody(new ZodValidationPipe(DeleteMessageData)) body: deleteMessageDto, @ConnectedSocket() client: Socket) {
     return await this.deletemessage.deleteMessage(body, client, this.server);
   }
 
-  @UsePipes(new ZodValidationPipe(ExitChatData))
   @SubscribeMessage(EmitTypes.EXITCHAT)
-  async exitChat(@MessageBody() body: exitChatDto, @ConnectedSocket() client: Socket) {
+  async exitChat(@MessageBody(new ZodValidationPipe(ExitChatData)) body: exitChatDto, @ConnectedSocket() client: Socket) {
     return await this.exitchat.exitChat(body, client, this.server);
   }
 
