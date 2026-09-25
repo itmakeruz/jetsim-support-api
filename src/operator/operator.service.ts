@@ -48,6 +48,15 @@ import { SocketGateway } from 'src/app.gateway';
 import { Helper } from 'src/helper/helper';
 import { MyHttpService } from 'src/http/http.service';
 
+/** Типы сообщений, которые являются ответом на другое сообщение */
+const REPLY_CONTENT_TYPES: ContentType[] = [
+  ContentType.REPLYTEXT,
+  ContentType.REPLYPHOTO,
+  ContentType.REPLYVIDEO,
+  ContentType.REPLYVOICE,
+  ContentType.REPLYDOCUMENT,
+];
+
 @Injectable()
 export class OperatorService {
   constructor(
@@ -236,15 +245,7 @@ export class OperatorService {
         ? {
             OR: [
               { user: { name: { contains: search, mode: 'insensitive' as const } } },
-              {
-                messages: {
-                  some: {
-                    deleted: false,
-                    content_type: { in: [ContentType.TEXT, ContentType.REPLYTEXT] },
-                    message: { path: ['content'], string_contains: search },
-                  },
-                },
-              },
+              { id: { in: await this.findTicketIdsByKeyword(search) } },
             ],
           }
         : undefined;
@@ -372,11 +373,17 @@ export class OperatorService {
       },
       orderBy: { created_at: 'asc' },
     });
-    if (!messages.length) throw new BadRequestException(ticket_notfound[lang]);
+    // Тикет без сообщений (все удалены) — это не ошибка. Раньше здесь летело
+    // исключение, и такой чат навсегда выглядел в панели как «не выбран».
+    if (!messages.length) {
+      return this.buildEmptyTicketChat(Number(data.id), user, lang);
+    }
     let chatData: Array<SendMessageResponse> = [];
     messages.forEach((message) => {
       let sendmessage: Message = { content: Object(message.message).content };
-      if (message.content_type == ContentType.REPLYTEXT) {
+      // Раньше цитата подставлялась только для reply_text, поэтому ответы
+      // на фото, видео, голосовые и документы приходили без неё
+      if (REPLY_CONTENT_TYPES.includes(message.content_type as ContentType)) {
         let replyMessage = messages.find((mes) => mes.id == Object(message?.message)?.reply_message_id);
         sendmessage.reply_content = {
           content: Object(replyMessage?.message)?.content,
@@ -462,6 +469,93 @@ export class OperatorService {
     this.socket.server.to(`operator:${user.user_id}`).emit(EmitTypes.UPDATEDUSER, userData);
     this.socket.server.to(`operator:${user.user_id}`).emit(EmitTypes.UPDATETICKET, responseData.ticket);
     return responseData;
+  }
+
+  /**
+   * Точный поиск по ключевому слову в тексте сообщений.
+   * Prisma в JSON-фильтрах не поддерживает ни mode:'insensitive', ни границы слова,
+   * поэтому раньше поиск по тексту был регистрозависимым и находил часть слова.
+   * `~*` с \y даёт совпадение по слову целиком и без учёта регистра.
+   */
+  private async findTicketIdsByKeyword(search: string): Promise<number[]> {
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = `\\y${escaped}\\y`;
+
+    const rows = await this.prisma.$queryRaw<Array<{ ticket_id: number }>>`
+      SELECT DISTINCT ticket_id
+      FROM messages
+      WHERE deleted = false
+        AND content_type IN ('text', 'reply_text')
+        AND message ->> 'content' ~* ${pattern}
+    `;
+
+    return rows.map((row) => Number(row.ticket_id));
+  }
+
+  private async buildEmptyTicketChat(ticketId: number, user: OperatorRequest, lang: string): Promise<ChatModel> {
+    const ticket = await this.prisma.tickets.findUnique({
+      where: { id: ticketId },
+      select: {
+        id: true,
+        status: true,
+        request_close: true,
+        updated_at: true,
+        categories: { select: { id: true, name: true, color: true } },
+        user: {
+          select: {
+            id: true,
+            chat_id: true,
+            name: true,
+            photo: true,
+            phone_number: true,
+            last_message: true,
+            is_block: true,
+            is_online: true,
+            updated_at: true,
+          },
+        },
+      },
+    });
+
+    if (!ticket) {
+      throw new BadRequestException(ticket_notfound[lang]);
+    }
+
+    await this.prisma.operators.update({
+      where: { id: user.user_id },
+      data: { ticket_id: ticketId, user_id: ticket.user.id },
+    });
+
+    return {
+      user: {
+        id: ticket.user.id,
+        chat_id: ticket.user.chat_id,
+        name: ticket.user.name,
+        phone: ticket.user.phone_number,
+        date: ticket.user.updated_at.toLocaleString(),
+        last_message: ticket.user.last_message,
+        is_block: ticket.user.is_block,
+        is_online: ticket.user.is_online,
+        push: 0,
+        user_image: ticket.user.photo,
+        base_url: this.config.get('FILES_BASE_URL'),
+      },
+      ticket: {
+        id: ticket.id,
+        subject: ticket.categories.name[lang],
+        user_name: ticket.user.name,
+        color: ticket.categories.color,
+        last_message: { content: '', message_id: null },
+        push: 0,
+        formatted_date: Helper.formatByMonthName(ticket.updated_at, lang),
+        last_request_user: '',
+        status: ticket.status,
+        request_close: ticket.request_close,
+        is_online: ticket.user.is_online,
+        user_id: ticket.user.id,
+      },
+      messages: [],
+    } as ChatModel;
   }
 
   async categories(user: OperatorRequest, lang): Promise<GetTicektsResponse[]> {
@@ -744,12 +838,16 @@ export class OperatorService {
   async getHints(query: WordsHintsDto, user: OperatorRequest, lang = 'ru') {
     const { search } = query;
 
-    const hints: Array<{ message: string }> = await this.prisma.$queryRawUnsafe<Array<{ message: string }>>(`
-            select 
-                distinct message ->> 'content' as message 
-            from messages 
-            where is_answer = 1 AND operator_id = ${user.user_id} AND message ->> 'content' ilike '%${search.replaceAll(/'/g, "''")}%' AND content_type = 'text' LIMIT 10 
-        `);
+    // Параметризованный запрос вместо $queryRawUnsafe с ручным экранированием кавычек
+    const hints: Array<{ message: string }> = await this.prisma.$queryRaw<Array<{ message: string }>>`
+      SELECT DISTINCT message ->> 'content' AS message
+      FROM messages
+      WHERE is_answer = 1
+        AND operator_id = ${user.user_id}
+        AND content_type = 'text'
+        AND message ->> 'content' ILIKE ${`%${search}%`}
+      LIMIT 10
+    `;
 
     hints.map((e) => (e.message = e.message.replaceAll('\n', '')));
     return hints;

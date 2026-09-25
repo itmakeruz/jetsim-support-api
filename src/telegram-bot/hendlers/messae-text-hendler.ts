@@ -2,7 +2,16 @@ import { Injectable } from '@nestjs/common';
 import * as http from 'https';
 import * as TelegramBotAPI from 'node-telegram-bot-api';
 import { button } from '../menu/static-menu';
-import { contact, download, download_description, else_message, success_txt, tickets_txt } from '../../dictonary';
+import {
+  channel,
+  channel_description,
+  contact,
+  download,
+  download_description,
+  else_message,
+  success_txt,
+  tickets_txt,
+} from '../../dictonary';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { extname, join } from 'path';
@@ -62,6 +71,11 @@ export class MessageTextHandler {
         parse_mode: 'Markdown',
         reply_markup: button('app_link'),
       });
+    } else if (channel.includes(text)) {
+      return bot.sendMessage(chat_id, channel_description[user?.lang || 'uz'], {
+        parse_mode: 'Markdown',
+        reply_markup: button('channel_link'),
+      });
     } else if (contact.includes(text)) {
       action.step = 'ticket';
       let updateUser = await this.prisma.users.update({
@@ -74,6 +88,21 @@ export class MessageTextHandler {
       });
     } else if (action?.step == 'answer') {
       if (!action.category_id.toString().startsWith('_')) {
+        // Занимаем шаг ДО медленного openTicket (он ходит в Telegram по HTTP).
+        // Иначе два быстрых сообщения подряд оба прочитают step='answer'
+        // и создадут два тикета в одной категории — это и есть «дубли чатов».
+        const claimed = await this.prisma.users.updateMany({
+          where: {
+            chat_id: chat_id.toString(),
+            action: { path: ['step'], equals: 'answer' },
+          },
+          data: { action: Object({ ...action, step: 'opening' }) },
+        });
+
+        if (claimed.count === 0) {
+          return;
+        }
+
         try {
           let ticket: OpenTicketResponse | any = await this.clientService.openTicket(
             {
@@ -92,6 +121,11 @@ export class MessageTextHandler {
           });
           return bot.sendMessage(chat_id, success_txt[user?.lang || 'uz']);
         } catch (error) {
+          // Возвращаем шаг обратно, иначе пользователь застрянет в 'opening'
+          await this.prisma.users.update({
+            where: { chat_id: chat_id.toString() },
+            data: { action: Object({ ...action, step: 'answer' }) },
+          });
           bot.sendMessage(chat_id, 'Error');
         }
       } else {

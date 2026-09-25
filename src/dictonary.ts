@@ -4,6 +4,12 @@ export const download_description = {
   ru: '🔗* Ссылка для скачивания приложения*',
   en: '🔗 *Link to download the application*',
 };
+export const channel = ['💬 Contact us', '💬 Связаться с нами', '💬 Biz bilan bogʻlanish'];
+export const channel_description = {
+  uz: '💬 *Savolingiz boʻlsa — operatorga yozing. Yangiliklar esa kanalimizda*',
+  ru: '💬 *Есть вопрос — напишите оператору. Новости публикуем в канале*',
+  en: '💬 *Have a question — message our operator. News go to our channel*',
+};
 export const home_txt = { uz: '🏠 Bosh saxifa', ru: '🏠 Домашняя страница', en: '🏠 Home page' };
 export const contact = ['📞 Aloqa', '📞 Contact', '📞 Контакты'];
 export const tickets_txt = {

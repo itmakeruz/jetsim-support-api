@@ -26,6 +26,10 @@ export class DinamicButton {
         AND: {
           user_id: user.id,
           status: { notIn: [StatusTypes.CLOSED] },
+          // getTicketsList исключает удалённые, а здесь их не отфильтровывали:
+          // удалённый тикет показывался кнопкой «продолжить» и одновременно
+          // своей категорией как «новый»
+          deleted: false,
         },
       },
       select: { id: true, categories: true },

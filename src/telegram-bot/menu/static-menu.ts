@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-type ButtonType = 'home' | 'language' | 'app_link' | 'home2';
+type ButtonType = 'home' | 'language' | 'app_link' | 'home2' | 'channel_link';
 const button = (btn: ButtonType, lang?) => {
   switch (btn) {
     case 'home':
@@ -9,11 +9,17 @@ const button = (btn: ButtonType, lang?) => {
       } = {
         en: {
           resize_keyboard: true,
-          keyboard: [[{ text: '📲 Download application' }, { text: '📞 Contact', request_contact: true }]],
+          keyboard: [
+            [{ text: '📲 Download application' }, { text: '📞 Contact', request_contact: true }],
+            [{ text: '💬 Contact us' }],
+          ],
         },
         ru: {
           resize_keyboard: true,
-          keyboard: [[{ text: '📲 Скачать приложение' }, { text: '📞 Контакты', request_contact: true }]],
+          keyboard: [
+            [{ text: '📲 Скачать приложение' }, { text: '📞 Контакты', request_contact: true }],
+            [{ text: '💬 Связаться с нами' }],
+          ],
         },
       };
       return home[lang];
@@ -24,11 +30,17 @@ const button = (btn: ButtonType, lang?) => {
       } = {
         en: {
           resize_keyboard: true,
-          keyboard: [[{ text: '📲 Download application' }, { text: '📞 Contact' }]],
+          keyboard: [
+            [{ text: '📲 Download application' }, { text: '📞 Contact' }],
+            [{ text: '💬 Contact us' }],
+          ],
         },
         ru: {
           resize_keyboard: true,
-          keyboard: [[{ text: '📲 Скачать приложение' }, { text: '📞 Контакты' }]],
+          keyboard: [
+            [{ text: '📲 Скачать приложение' }, { text: '📞 Контакты' }],
+            [{ text: '💬 Связаться с нами' }],
+          ],
         },
       };
       return home2[lang];
@@ -62,6 +74,15 @@ const button = (btn: ButtonType, lang?) => {
         ],
       };
       return app_link;
+    case 'channel_link':
+      // Оператор первым: из канала клиенту некуда написать, он просто уходит
+      let channel_link: TelegramBot.InlineKeyboardMarkup = {
+        inline_keyboard: [
+          [{ text: '✍️ Написать нам', url: 'https://t.me/Operator1jet' }],
+          [{ text: '📢 Наш канал', url: 'https://t.me/jetsimru' }],
+        ],
+      };
+      return channel_link;
   }
 };
 

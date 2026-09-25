@@ -19,7 +19,9 @@ export class ExitChat {
     const { ticket_id } = data;
     let user: OperatorRequest = client['user'];
 
-    await this.prisma.operators.update({
+    // updateMany вместо update: составной where у update роняет P2025, если у оператора
+    // уже другой открытый тикет. Выход из чата не должен падать из-за этого.
+    await this.prisma.operators.updateMany({
       where: {
         id: user.user_id,
         ticket_id: ticket_id,
